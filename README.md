@@ -3007,5 +3007,2462 @@ Kết quả: [11, 12, 22, 25, 34, 64, 90]
 ---
 
 > **📌 Kết thúc Phần 2: Lập Trình Cơ Bản**
+
+---
+
+# Phần 3: Lập Trình Hướng Đối Tượng (OOP)
+
+## 📌 Mục lục
+
+1. [Tính đóng gói (Encapsulation)](#1-tính-đóng-gói-encapsulation)
+2. [Tính kế thừa (Inheritance)](#2-tính-kế-thừa-inheritance)
+3. [Tính trừu tượng (Abstraction)](#3-tính-trừu-tượng-abstraction)
+4. [Tính đa hình (Polymorphism) & Interface](#4-tính-đa-hình-polymorphism--interface)
+5. [Cấu trúc Class và khai báo đối tượng](#5-cấu-trúc-class-và-khai-báo-đối-tượng)
+6. [Hàm khởi tạo Constructor](#6-hàm-khởi-tạo-constructor)
+7. [Từ khóa this và super](#7-từ-khóa-this-và-super)
+8. [Nạp chồng và ghi đè phương thức](#8-nạp-chồng-overloading-và-ghi-đè-overriding-phương-thức)
+9. [Mảng đối tượng cùng implement 1 interface](#9-mảng-đối-tượng-cùng-implement-1-interface)
+10. [Sự khác nhau giữa Abstract và Interface](#10-sự-khác-nhau-giữa-abstract-và-interface)
+11. [Từ khóa static](#11-từ-khóa-static)
+12. [Access Modifier](#12-access-modifier)
+13. [Nạp chồng hàm (các hàm cùng tên khác tham số)](#13-nạp-chồng-hàm---các-hàm-cùng-tên-khác-tham-số)
+14. [Từ khóa final](#14-từ-khóa-final)
+15. [Biến static, biến final, hằng số](#15-biến-static-biến-final-hằng-số)
+16. [Toán tử instanceof](#16-toán-tử-instanceof)
+17. [Các lớp Wrapper](#17-các-lớp-wrapper)
+18. [Chuyển đổi (cast) kiểu dữ liệu](#18-chuyển-đổi-cast-kiểu-dữ-liệu)
+19. [Parse giá trị từ String sang số](#19-parse-giá-trị-từ-string-sang-số)
+20. [Danh sách liên kết (Linked List)](#20-danh-sách-liên-kết-linked-list)
+21. [So sánh DSLK và Mảng truyền thống](#21-so-sánh-dslk-và-mảng-truyền-thống)
+22. [Khai báo chuỗi, cắt chuỗi, nối chuỗi](#22-khai-báo-chuỗi-cắt-chuỗi-nối-chuỗi)
+23. [StringBuilder và StringTokenizer](#23-stringbuilder-và-stringtokenizer)
+24. [So sánh cộng String và StringBuilder](#24-so-sánh-cộng-string-và-stringbuilder)
+25. [Nạp chồng toString](#25-nạp-chồng-tostring)
+26. [Hashing](#26-hashing)
+27. [Tự tạo hàm hashing 3 số nguyên](#27-tự-tạo-hàm-hashing-3-số-nguyên)
+28. [Sử dụng MD5 / CRC32 để hash chuỗi](#28-sử-dụng-md5--crc32-để-hash-chuỗi)
+29. [Hashing để ẩn password](#29-hashing-để-ẩn-password)
+30. [Hashtable và bảng băm](#30-hashtable-và-bảng-băm)
+31. [Ghi đè hashCode và equals](#31-ghi-đè-hashcode-và-equals)
+
+---
+
+## 1. Tính đóng gói (Encapsulation)
+
+### 1.1 Đóng gói là gì?
+
+**Đóng gói** là việc **gói dữ liệu (thuộc tính) và phương thức (hành vi)** vào trong **một class**, đồng thời **ẩn giấu** chi tiết bên trong, chỉ cho phép truy cập thông qua các phương thức public (getter/setter).
+
+```
+Đóng gói = Gói (thuộc tính + phương thức) VÀO trong Class
+         + Ẩn giấu (dùng private) chi tiết bên trong
+         + Chỉ cho truy cập qua giao diện public (getter/setter)
+
+  ┌───────────────── Class BankAccount ─────────────────┐
+  │                                                      │
+  │  🔒 private (ẨN - bên ngoài KHÔNG thấy)             │
+  │  ┌────────────────────────────────────────────┐      │
+  │  │  - balance: double                         │      │
+  │  │  - accountNumber: String                   │      │
+  │  │  - pin: String                             │      │
+  │  └────────────────────────────────────────────┘      │
+  │                                                      │
+  │  🔓 public (MỞ - bên ngoài có thể gọi)              │
+  │  ┌────────────────────────────────────────────┐      │
+  │  │  + getBalance(): double                    │      │
+  │  │  + deposit(amount): void                   │      │
+  │  │  + withdraw(amount): boolean               │      │
+  │  └────────────────────────────────────────────┘      │
+  └──────────────────────────────────────────────────────┘
+
+Bên ngoài:
+  account.balance = -1000;  // ❌ KHÔNG THỂ truy cập trực tiếp
+  account.deposit(500);     // ✅ Phải gọi qua phương thức public
+```
+
+### 1.2 Code ví dụ
+
+```java
+// ===== KHÔNG ĐÓNG GÓI (SAI) =====
+class BadBankAccount {
+    public double balance;      // Ai cũng truy cập được
+    public String accountNumber;
+    public String pin;
+    // → Bên ngoài có thể: account.balance = -99999; (NGUY HIỂM!)
+}
+
+// ===== CÓ ĐÓNG GÓI (ĐÚNG) =====
+class BankAccount {
+    // 🔒 Thuộc tính private - ẨN dữ liệu bên trong
+    private double balance;
+    private String accountNumber;
+    private String ownerName;
+
+    // 🔓 Constructor public
+    public BankAccount(String accountNumber, String ownerName, double initialBalance) {
+        this.accountNumber = accountNumber;
+        this.ownerName = ownerName;
+        this.balance = initialBalance;
+    }
+
+    // 🔓 Getter - chỉ cho đọc, KHÔNG cho sửa trực tiếp
+    public double getBalance() {
+        return balance;
+    }
+
+    public String getAccountNumber() {
+        return accountNumber;
+    }
+
+    public String getOwnerName() {
+        return ownerName;
+    }
+
+    // 🔓 Setter có kiểm tra dữ liệu (validation)
+    public void setOwnerName(String ownerName) {
+        if (ownerName == null || ownerName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Tên không được rỗng!");
+        }
+        this.ownerName = ownerName;
+    }
+    // Lưu ý: KHÔNG có setBalance() - không cho phép sửa trực tiếp!
+
+    // 🔓 Phương thức nghiệp vụ (có kiểm tra logic)
+    public void deposit(double amount) {
+        if (amount <= 0) {
+            System.out.println("❌ Số tiền gửi phải lớn hơn 0!");
+            return;
+        }
+        balance += amount;
+        System.out.printf("✅ Gửi $%.2f thành công. Số dư: $%.2f%n", amount, balance);
+    }
+
+    public boolean withdraw(double amount) {
+        if (amount <= 0) {
+            System.out.println("❌ Số tiền rút phải lớn hơn 0!");
+            return false;
+        }
+        if (amount > balance) {
+            System.out.println("❌ Số dư không đủ!");
+            return false;
+        }
+        balance -= amount;
+        System.out.printf("✅ Rút $%.2f thành công. Số dư: $%.2f%n", amount, balance);
+        return true;
+    }
+}
+
+// ===== SỬ DỤNG =====
+public class EncapsulationDemo {
+    public static void main(String[] args) {
+        BankAccount acc = new BankAccount("ACC001", "Nguyễn Dũng", 1000.0);
+
+        // acc.balance = -5000;    // ❌ LỖI BIÊN DỊCH! balance là private
+        // acc.balance += 999999;  // ❌ LỖI! Không thể hack
+
+        acc.deposit(500);          // ✅ Gửi $500.00 thành công. Số dư: $1500.00
+        acc.withdraw(200);         // ✅ Rút $200.00 thành công. Số dư: $1300.00
+        acc.withdraw(5000);        // ❌ Số dư không đủ!
+        acc.deposit(-100);         // ❌ Số tiền gửi phải lớn hơn 0!
+
+        System.out.println("Số dư: $" + acc.getBalance()); // 1300.0
+    }
+}
+```
+
+### 1.3 Ý nghĩa thực tế
+
+| Lợi ích | Giải thích |
+|---|---|
+| **Bảo vệ dữ liệu** | Không ai sửa `balance` thành -99999 được |
+| **Kiểm soát logic** | Gửi/rút tiền phải qua kiểm tra (amount > 0, đủ số dư) |
+| **Dễ bảo trì** | Thay đổi logic bên trong mà không ảnh hưởng code bên ngoài |
+| **Tái sử dụng** | Class độc lập, dùng ở đâu cũng được |
+
+---
+
+## 2. Tính kế thừa (Inheritance)
+
+### 2.1 Kế thừa là gì?
+
+**Kế thừa** cho phép một class con (**subclass**) **thừa hưởng** thuộc tính và phương thức từ class cha (**superclass**). Dùng từ khóa `extends`.
+
+```
+          ┌──────────────────┐
+          │     Animal       │  ← Class CHA (superclass)
+          │  - name: String  │
+          │  - age: int      │
+          │  + eat()         │
+          │  + sleep()       │
+          └───────┬──────────┘
+                  │ extends
+        ┌─────────┴─────────┐
+        │                   │
+  ┌─────▼──────┐     ┌─────▼──────┐
+  │    Dog     │     │    Cat     │  ← Class CON (subclass)
+  │  + bark()  │     │  + meow()  │
+  │  + fetch() │     │  + purr()  │
+  └────────────┘     └────────────┘
+
+  Dog kế thừa: name, age, eat(), sleep() từ Animal
+  Dog có thêm: bark(), fetch() riêng
+```
+
+### 2.2 Code ví dụ
+
+```java
+// ===== CLASS CHA =====
+class Animal {
+    protected String name;
+    protected int age;
+
+    public Animal(String name, int age) {
+        this.name = name;
+        this.age = age;
+        System.out.println("→ Constructor Animal được gọi");
+    }
+
+    public void eat() {
+        System.out.println(name + " đang ăn...");
+    }
+
+    public void sleep() {
+        System.out.println(name + " đang ngủ...");
+    }
+
+    public String info() {
+        return name + " (" + age + " tuổi)";
+    }
+}
+
+// ===== CLASS CON 1: Dog extends Animal =====
+class Dog extends Animal {
+    private String breed; // Thuộc tính riêng
+
+    public Dog(String name, int age, String breed) {
+        super(name, age); // Gọi constructor của class cha
+        this.breed = breed;
+        System.out.println("→ Constructor Dog được gọi");
+    }
+
+    // Phương thức riêng của Dog
+    public void bark() {
+        System.out.println(name + " sủa: Gâu gâu! 🐕");
+    }
+
+    public void fetch(String item) {
+        System.out.println(name + " đang nhặt " + item);
+    }
+
+    // OVERRIDE (ghi đè) phương thức của class cha
+    @Override
+    public void eat() {
+        System.out.println(name + " đang gặm xương... 🦴");
+    }
+
+    @Override
+    public String info() {
+        return super.info() + " - Giống: " + breed;
+    }
+}
+
+// ===== CLASS CON 2: Cat extends Animal =====
+class Cat extends Animal {
+    private boolean isIndoor;
+
+    public Cat(String name, int age, boolean isIndoor) {
+        super(name, age);
+        this.isIndoor = isIndoor;
+    }
+
+    public void meow() {
+        System.out.println(name + " kêu: Meo meo! 🐱");
+    }
+
+    @Override
+    public void eat() {
+        System.out.println(name + " đang ăn cá... 🐟");
+    }
+}
+
+// ===== SỬ DỤNG =====
+public class InheritanceDemo {
+    public static void main(String[] args) {
+        Dog dog = new Dog("Buddy", 3, "Golden Retriever");
+        Cat cat = new Cat("Mimi", 2, true);
+
+        System.out.println("\n--- Dog ---");
+        System.out.println(dog.info());  // Buddy (3 tuổi) - Giống: Golden Retriever
+        dog.eat();   // Buddy đang gặm xương... 🦴  (overridden)
+        dog.sleep(); // Buddy đang ngủ...            (kế thừa từ Animal)
+        dog.bark();  // Buddy sủa: Gâu gâu! 🐕      (riêng của Dog)
+
+        System.out.println("\n--- Cat ---");
+        cat.eat();   // Mimi đang ăn cá... 🐟
+        cat.sleep(); // Mimi đang ngủ...
+        cat.meow();  // Mimi kêu: Meo meo! 🐱
+    }
+}
+```
+
+### 2.3 Override - Ghi đè phương thức
+
+**Override** = class con **viết lại** phương thức đã có ở class cha để thay đổi hành vi.
+
+```java
+// Trong class Animal:
+public void eat() {
+    System.out.println(name + " đang ăn...");  // Hành vi chung
+}
+
+// Trong class Dog (override):
+@Override
+public void eat() {
+    System.out.println(name + " đang gặm xương...");  // Hành vi riêng của Dog
+}
+
+// @Override: annotation KHÔNG bắt buộc nhưng NÊN dùng
+// → Giúp compiler kiểm tra: nếu tên hàm sai → báo lỗi ngay
+```
+
+---
+
+## 3. Tính trừu tượng (Abstraction)
+
+### 3.1 Abstract là gì?
+
+**Trừu tượng** là việc **ẩn giấu chi tiết triển khai**, chỉ **hiển thị chức năng** cho người dùng. Abstract class là class **chưa hoàn chỉnh**, chứa các phương thức chưa có thân hàm (abstract method).
+
+```
+Khi nào dùng Abstract Class?
+→ Khi có một nhóm class LIÊN QUAN, chia sẻ một phần code chung,
+  nhưng MỖI class con có CÁCH TRIỂN KHAI RIÊNG cho một số phương thức.
+
+Ví dụ thực tế: Hình dạng (Shape)
+- Mọi hình đều có diện tích, chu vi → khai báo abstract
+- Nhưng CÁCH TÍNH diện tích hình tròn ≠ hình chữ nhật → mỗi class con tự triển khai
+```
+
+### 3.2 Code ví dụ
+
+```java
+// ===== ABSTRACT CLASS =====
+abstract class Shape {
+    protected String color;
+    protected String name;
+
+    public Shape(String name, String color) {
+        this.name = name;
+        this.color = color;
+    }
+
+    // Abstract method - KHÔNG có thân hàm
+    // → Bắt buộc class con PHẢI triển khai
+    public abstract double getArea();
+    public abstract double getPerimeter();
+
+    // Phương thức BÌNH THƯỜNG - có thân hàm
+    // → Class con kế thừa được luôn
+    public void displayInfo() {
+        System.out.printf("%s [%s]: Diện tích = %.2f, Chu vi = %.2f%n",
+                name, color, getArea(), getPerimeter());
+    }
+}
+
+// ===== CLASS CON 1: Hình tròn =====
+class Circle extends Shape {
+    private double radius;
+
+    public Circle(String color, double radius) {
+        super("Hình tròn", color);
+        this.radius = radius;
+    }
+
+    @Override
+    public double getArea() {
+        return Math.PI * radius * radius;  // πr²
+    }
+
+    @Override
+    public double getPerimeter() {
+        return 2 * Math.PI * radius;  // 2πr
+    }
+}
+
+// ===== CLASS CON 2: Hình chữ nhật =====
+class Rectangle extends Shape {
+    private double width, height;
+
+    public Rectangle(String color, double width, double height) {
+        super("Hình chữ nhật", color);
+        this.width = width;
+        this.height = height;
+    }
+
+    @Override
+    public double getArea() {
+        return width * height;
+    }
+
+    @Override
+    public double getPerimeter() {
+        return 2 * (width + height);
+    }
+}
+
+// ===== CLASS CON 3: Hình tam giác =====
+class Triangle extends Shape {
+    private double a, b, c; // 3 cạnh
+
+    public Triangle(String color, double a, double b, double c) {
+        super("Hình tam giác", color);
+        this.a = a;
+        this.b = b;
+        this.c = c;
+    }
+
+    @Override
+    public double getArea() {
+        double s = (a + b + c) / 2;  // Nửa chu vi
+        return Math.sqrt(s * (s - a) * (s - b) * (s - c)); // Công thức Heron
+    }
+
+    @Override
+    public double getPerimeter() {
+        return a + b + c;
+    }
+}
+
+// ===== SỬ DỤNG =====
+public class AbstractDemo {
+    public static void main(String[] args) {
+        // Shape s = new Shape("test", "red"); // ❌ LỖI! Không thể tạo đối tượng abstract
+
+        Shape circle = new Circle("Đỏ", 5);
+        Shape rect = new Rectangle("Xanh", 4, 6);
+        Shape tri = new Triangle("Vàng", 3, 4, 5);
+
+        circle.displayInfo();  // Hình tròn [Đỏ]: Diện tích = 78.54, Chu vi = 31.42
+        rect.displayInfo();    // Hình chữ nhật [Xanh]: Diện tích = 24.00, Chu vi = 20.00
+        tri.displayInfo();     // Hình tam giác [Vàng]: Diện tích = 6.00, Chu vi = 12.00
+
+        // Mảng đa hình
+        Shape[] shapes = {circle, rect, tri};
+        double totalArea = 0;
+        for (Shape s : shapes) {
+            totalArea += s.getArea();
+        }
+        System.out.printf("Tổng diện tích: %.2f%n", totalArea);
+    }
+}
+```
+
+---
+
+## 4. Tính đa hình (Polymorphism) & Interface
+
+### 4.1 Đa hình là gì?
+
+**Đa hình** = "Nhiều hình thái" — cùng một hành động nhưng **biểu hiện khác nhau** tùy theo đối tượng thực tế.
+
+```
+Cùng gọi hàm speak():
+  Animal a1 = new Dog();   → a1.speak() → "Gâu gâu!"
+  Animal a2 = new Cat();   → a2.speak() → "Meo meo!"
+  Animal a3 = new Duck();  → a3.speak() → "Quạc quạc!"
+
+  → Cùng kiểu Animal, cùng gọi speak(), nhưng KẾT QUẢ KHÁC NHAU
+  → Đây chính là ĐA HÌNH!
+```
+
+### 4.2 Interface là gì?
+
+**Interface** là một **"hợp đồng"** định nghĩa các phương thức mà class **bắt buộc phải triển khai**. Interface chỉ có khai báo, không có triển khai (trước Java 8).
+
+```
+Interface giống như "bản mô tả việc cần làm",
+class implement interface giống như "người nhận việc và làm theo cách riêng"
+
+  ┌───────────────────┐
+  │ «interface»       │
+  │   Drawable         │
+  │  + draw(): void   │
+  │  + resize(): void │
+  └────────┬──────────┘
+           │ implements
+     ┌─────┴──────┐
+     │            │
+  ┌──▼───┐   ┌───▼──┐
+  │Circle│   │Square│  ← Mỗi class triển khai draw() theo cách riêng
+  └──────┘   └──────┘
+```
+
+### 4.3 Code ví dụ
+
+```java
+// ===== INTERFACE =====
+interface Playable {
+    // Phương thức abstract (mặc định đã là public abstract)
+    void play();
+    void stop();
+    String getType();
+
+    // Default method (Java 8+) - có thân hàm
+    default void pause() {
+        System.out.println("⏸ Tạm dừng " + getType());
+    }
+
+    // Static method trong interface
+    static void about() {
+        System.out.println("Interface Playable - Định nghĩa hành vi phát media");
+    }
+}
+
+// ===== INTERFACE THỨ 2 =====
+interface Recordable {
+    void record();
+    void stopRecording();
+}
+
+// ===== CLASS IMPLEMENT 1 INTERFACE =====
+class MusicPlayer implements Playable {
+    private String songName;
+
+    public MusicPlayer(String songName) {
+        this.songName = songName;
+    }
+
+    @Override
+    public void play() {
+        System.out.println("🎵 Đang phát nhạc: " + songName);
+    }
+
+    @Override
+    public void stop() {
+        System.out.println("⏹ Dừng phát nhạc: " + songName);
+    }
+
+    @Override
+    public String getType() {
+        return "Music Player";
+    }
+}
+
+// ===== CLASS IMPLEMENT 2 INTERFACE (đa kế thừa interface) =====
+class VideoPlayer implements Playable, Recordable {
+    private String videoName;
+
+    public VideoPlayer(String videoName) {
+        this.videoName = videoName;
+    }
+
+    @Override
+    public void play() {
+        System.out.println("🎬 Đang phát video: " + videoName);
+    }
+
+    @Override
+    public void stop() {
+        System.out.println("⏹ Dừng video: " + videoName);
+    }
+
+    @Override
+    public String getType() {
+        return "Video Player";
+    }
+
+    @Override
+    public void record() {
+        System.out.println("⏺ Đang ghi hình...");
+    }
+
+    @Override
+    public void stopRecording() {
+        System.out.println("⏹ Dừng ghi hình");
+    }
+}
+
+// ===== GAME implement Playable =====
+class Game implements Playable {
+    private String gameName;
+
+    public Game(String gameName) {
+        this.gameName = gameName;
+    }
+
+    @Override
+    public void play() {
+        System.out.println("🎮 Đang chơi game: " + gameName);
+    }
+
+    @Override
+    public void stop() {
+        System.out.println("⏹ Thoát game: " + gameName);
+    }
+
+    @Override
+    public String getType() {
+        return "Game";
+    }
+}
+
+// ===== SỬ DỤNG =====
+public class PolymorphismDemo {
+    public static void main(String[] args) {
+        // Đa hình: cùng kiểu Playable, nhưng hành vi khác nhau
+        Playable music = new MusicPlayer("Hoa Nở Không Màu");
+        Playable video = new VideoPlayer("Java Tutorial");
+        Playable game  = new Game("Minecraft");
+
+        System.out.println("===== ĐA HÌNH =====");
+        music.play();  // 🎵 Đang phát nhạc: Hoa Nở Không Màu
+        video.play();  // 🎬 Đang phát video: Java Tutorial
+        game.play();   // 🎮 Đang chơi game: Minecraft
+
+        // Default method
+        music.pause(); // ⏸ Tạm dừng Music Player
+
+        // Static method
+        Playable.about();
+
+        // Duyệt mảng đa hình
+        System.out.println("\n===== Duyệt mảng =====");
+        Playable[] players = {music, video, game};
+        for (Playable p : players) {
+            p.play();
+            p.stop();
+            System.out.println("---");
+        }
+    }
+}
+```
+
+---
+
+## 5. Cấu trúc Class và khai báo đối tượng
+
+### 5.1 Cấu trúc đầy đủ của một Class
+
+```java
+// ===== CẤU TRÚC ĐẦY ĐỦ CỦA MỘT CLASS =====
+public class Student {
+    // ========== 1. THUỘC TÍNH (Fields/Attributes) ==========
+    // Biến static (dùng chung cho tất cả đối tượng)
+    private static int studentCount = 0;
+    public static final String SCHOOL_NAME = "HCMUS"; // Hằng số
+
+    // Biến instance (riêng cho từng đối tượng)
+    private int id;
+    private String name;
+    private double gpa;
+    private String major;
+
+    // ========== 2. CONSTRUCTOR (Hàm khởi tạo) ==========
+    // Constructor mặc định
+    public Student() {
+        studentCount++;
+        this.id = studentCount;
+        this.name = "Unknown";
+        this.gpa = 0.0;
+        this.major = "Undeclared";
+    }
+
+    // Constructor có tham số
+    public Student(String name, double gpa, String major) {
+        studentCount++;
+        this.id = studentCount;
+        this.name = name;
+        this.gpa = gpa;
+        this.major = major;
+    }
+
+    // ========== 3. GETTER / SETTER ==========
+    public int getId() { return id; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public double getGpa() { return gpa; }
+    public void setGpa(double gpa) {
+        if (gpa >= 0.0 && gpa <= 10.0) {
+            this.gpa = gpa;
+        } else {
+            throw new IllegalArgumentException("GPA phải từ 0 đến 10!");
+        }
+    }
+
+    public String getMajor() { return major; }
+    public void setMajor(String major) { this.major = major; }
+
+    // ========== 4. PHƯƠNG THỨC (Methods) ==========
+    public String getGrade() {
+        if (gpa >= 9.0) return "Xuất sắc";
+        if (gpa >= 8.0) return "Giỏi";
+        if (gpa >= 7.0) return "Khá";
+        if (gpa >= 5.0) return "Trung bình";
+        return "Yếu";
+    }
+
+    // ========== 5. STATIC METHOD ==========
+    public static int getStudentCount() {
+        return studentCount;
+    }
+
+    // ========== 6. TOSTRING (Ghi đè từ Object) ==========
+    @Override
+    public String toString() {
+        return String.format("Student{id=%d, name='%s', gpa=%.1f, major='%s', grade='%s'}",
+                id, name, gpa, major, getGrade());
+    }
+}
+
+// ===== KHAI BÁO VÀ SỬ DỤNG ĐỐI TƯỢNG =====
+public class ClassDemo {
+    public static void main(String[] args) {
+        // Cách 1: Dùng constructor mặc định
+        Student s1 = new Student();
+        System.out.println(s1); // Student{id=1, name='Unknown', gpa=0.0, ...}
+
+        // Cách 2: Dùng constructor có tham số
+        Student s2 = new Student("Nguyễn Dũng", 8.5, "CNTT");
+        Student s3 = new Student("Trần An", 9.2, "KHMT");
+
+        System.out.println(s2); // Student{id=2, name='Nguyễn Dũng', gpa=8.5, ...}
+        System.out.println(s3); // Student{id=3, name='Trần An', gpa=9.2, ...}
+
+        // Sử dụng getter/setter
+        s2.setGpa(9.0);
+        System.out.println(s2.getName() + " xếp loại: " + s2.getGrade());
+
+        // Static method
+        System.out.println("Tổng sinh viên: " + Student.getStudentCount()); // 3
+        System.out.println("Trường: " + Student.SCHOOL_NAME); // HCMUS
+    }
+}
+```
+
+---
+
+## 6. Hàm khởi tạo Constructor
+
+```java
+public class ConstructorDemo {
+    // ===== CLASS VỚI NHIỀU LOẠI CONSTRUCTOR =====
+    static class Product {
+        private String name;
+        private double price;
+        private int quantity;
+        private String category;
+
+        // 1. Constructor mặc định (no-arg)
+        public Product() {
+            this.name = "Unknown";
+            this.price = 0.0;
+            this.quantity = 0;
+            this.category = "General";
+            System.out.println("→ Gọi constructor mặc định");
+        }
+
+        // 2. Constructor có 2 tham số
+        public Product(String name, double price) {
+            this.name = name;
+            this.price = price;
+            this.quantity = 1;
+            this.category = "General";
+            System.out.println("→ Gọi constructor 2 tham số");
+        }
+
+        // 3. Constructor đầy đủ
+        public Product(String name, double price, int quantity, String category) {
+            this.name = name;
+            this.price = price;
+            this.quantity = quantity;
+            this.category = category;
+            System.out.println("→ Gọi constructor đầy đủ");
+        }
+
+        // 4. Constructor gọi constructor khác (this)
+        public Product(String name) {
+            this(name, 0.0); // Gọi constructor 2 tham số
+            System.out.println("→ Gọi constructor 1 tham số (đã gọi this(name, 0.0))");
+        }
+
+        // 5. Copy constructor
+        public Product(Product other) {
+            this.name = other.name;
+            this.price = other.price;
+            this.quantity = other.quantity;
+            this.category = other.category;
+            System.out.println("→ Gọi copy constructor");
+        }
+
+        @Override
+        public String toString() {
+            return String.format("%s - $%.2f x%d [%s]", name, price, quantity, category);
+        }
+    }
+
+    public static void main(String[] args) {
+        Product p1 = new Product();                                // Constructor mặc định
+        Product p2 = new Product("Laptop", 999.99);               // 2 tham số
+        Product p3 = new Product("Phone", 699.0, 5, "Electronics"); // Đầy đủ
+        Product p4 = new Product("Tablet");                        // 1 tham số → gọi this()
+        Product p5 = new Product(p2);                              // Copy constructor
+
+        System.out.println("\n--- Kết quả ---");
+        System.out.println("p1: " + p1);
+        System.out.println("p2: " + p2);
+        System.out.println("p3: " + p3);
+        System.out.println("p4: " + p4);
+        System.out.println("p5: " + p5);
+    }
+}
+```
+
+---
+
+## 7. Từ khóa this và super
+
+```java
+class Vehicle {
+    protected String brand;
+    protected int year;
+
+    public Vehicle(String brand, int year) {
+        this.brand = brand;  // this = đối tượng hiện tại
+        this.year = year;
+    }
+
+    public void start() {
+        System.out.println(brand + " đang khởi động...");
+    }
+
+    public void displayInfo() {
+        System.out.println("Xe: " + brand + " (" + year + ")");
+    }
+}
+
+class Car extends Vehicle {
+    private int numDoors;
+    private String engineType;
+
+    public Car(String brand, int year, int numDoors, String engineType) {
+        super(brand, year);         // super() → gọi constructor của class CHA
+        this.numDoors = numDoors;   // this → phân biệt tham số và thuộc tính
+        this.engineType = engineType;
+    }
+
+    // this - trả về chính đối tượng (method chaining)
+    public Car setNumDoors(int numDoors) {
+        this.numDoors = numDoors;
+        return this;  // Trả về chính đối tượng hiện tại
+    }
+
+    public Car setEngineType(String engineType) {
+        this.engineType = engineType;
+        return this;
+    }
+
+    @Override
+    public void start() {
+        super.start();  // super.method() → gọi phương thức của class CHA
+        System.out.println("Động cơ " + engineType + " đã sẵn sàng!");
+    }
+
+    @Override
+    public void displayInfo() {
+        super.displayInfo();  // Gọi displayInfo() của Vehicle
+        System.out.println("Số cửa: " + numDoors + ", Động cơ: " + engineType);
+    }
+}
+
+public class ThisSuperDemo {
+    public static void main(String[] args) {
+        Car car = new Car("Toyota", 2024, 4, "Hybrid");
+
+        car.start();
+        // Toyota đang khởi động...       ← super.start()
+        // Động cơ Hybrid đã sẵn sàng!     ← code riêng của Car
+
+        car.displayInfo();
+        // Xe: Toyota (2024)               ← super.displayInfo()
+        // Số cửa: 4, Động cơ: Hybrid      ← code riêng
+
+        // Method chaining với this
+        Car car2 = new Car("Honda", 2023, 2, "Gasoline");
+        car2.setNumDoors(4).setEngineType("Electric"); // Chuỗi gọi liên tiếp
+        car2.displayInfo();
+    }
+}
+```
+
+**Tóm tắt:**
+
+| Từ khóa | Ý nghĩa | Ví dụ |
+|---|---|---|
+| `this.field` | Thuộc tính của **đối tượng hiện tại** | `this.name = name;` |
+| `this()` | Gọi **constructor khác** cùng class | `this(name, 0.0);` |
+| `this` | Trả về **đối tượng hiện tại** | `return this;` (method chaining) |
+| `super.field` | Thuộc tính của **class cha** | `super.name` |
+| `super()` | Gọi **constructor** của class cha | `super(brand, year);` |
+| `super.method()` | Gọi **phương thức** của class cha | `super.start();` |
+
+---
+
+## 8. Nạp chồng (Overloading) và Ghi đè (Overriding) phương thức
+
+```java
+class Calculator {
+    // ===== NẠP CHỒNG (OVERLOADING): Cùng tên, KHÁC tham số =====
+    public int add(int a, int b) {
+        System.out.println("add(int, int)");
+        return a + b;
+    }
+
+    public double add(double a, double b) {
+        System.out.println("add(double, double)");
+        return a + b;
+    }
+
+    public int add(int a, int b, int c) {
+        System.out.println("add(int, int, int)");
+        return a + b + c;
+    }
+
+    public String add(String a, String b) {
+        System.out.println("add(String, String)");
+        return a + b;
+    }
+}
+
+class ScientificCalculator extends Calculator {
+    // ===== GHI ĐÈ (OVERRIDING): Cùng tên, CÙNG tham số, khác class =====
+    @Override
+    public int add(int a, int b) {
+        System.out.println("ScientificCalculator.add(int, int)");
+        int result = super.add(a, b); // Có thể gọi hàm cha
+        System.out.println("(Đã ghi log kết quả: " + result + ")");
+        return result;
+    }
+
+    // Phương thức MỚI chỉ có trong class con
+    public double power(double base, double exp) {
+        return Math.pow(base, exp);
+    }
+}
+
+public class OverloadOverrideDemo {
+    public static void main(String[] args) {
+        Calculator calc = new Calculator();
+
+        // Nạp chồng - Java tự chọn phương thức phù hợp dựa vào tham số
+        System.out.println(calc.add(1, 2));          // add(int, int) → 3
+        System.out.println(calc.add(1.5, 2.5));      // add(double, double) → 4.0
+        System.out.println(calc.add(1, 2, 3));       // add(int, int, int) → 6
+        System.out.println(calc.add("Hello", " World")); // add(String, String)
+
+        System.out.println("\n--- Ghi đè ---");
+        ScientificCalculator sci = new ScientificCalculator();
+        sci.add(10, 20); // Gọi phiên bản override của ScientificCalculator
+    }
+}
+```
+
+| Tiêu chí | Nạp chồng (Overloading) | Ghi đè (Overriding) |
+|---|---|---|
+| **Vị trí** | Cùng class HOẶC class con | Class con ghi đè class cha |
+| **Tên hàm** | Giống nhau | Giống nhau |
+| **Tham số** | **Khác** (số lượng, kiểu, thứ tự) | **Giống hệt** |
+| **Kiểu trả về** | Có thể khác | Phải giống (hoặc kiểu con) |
+| **Thời điểm xác định** | Compile-time (static binding) | Runtime (dynamic binding) |
+| **Annotation** | Không cần | `@Override` (nên dùng) |
+
+---
+
+## 9. Mảng đối tượng cùng implement 1 interface
+
+```java
+interface Taxable {
+    double calculateTax();
+    String getTaxInfo();
+}
+
+class Employee implements Taxable {
+    private String name;
+    private double salary;
+
+    public Employee(String name, double salary) {
+        this.name = name;
+        this.salary = salary;
+    }
+
+    @Override
+    public double calculateTax() {
+        return salary * 0.1; // Thuế 10% lương
+    }
+
+    @Override
+    public String getTaxInfo() {
+        return String.format("NV: %-15s | Lương: %10.0f | Thuế: %10.0f",
+                name, salary, calculateTax());
+    }
+}
+
+class FreelanceWorker implements Taxable {
+    private String name;
+    private double projectIncome;
+
+    public FreelanceWorker(String name, double projectIncome) {
+        this.name = name;
+        this.projectIncome = projectIncome;
+    }
+
+    @Override
+    public double calculateTax() {
+        return projectIncome * 0.05; // Thuế 5%
+    }
+
+    @Override
+    public String getTaxInfo() {
+        return String.format("FL: %-15s | Thu nhập: %8.0f | Thuế: %10.0f",
+                name, projectIncome, calculateTax());
+    }
+}
+
+class Business implements Taxable {
+    private String name;
+    private double revenue;
+    private double expenses;
+
+    public Business(String name, double revenue, double expenses) {
+        this.name = name;
+        this.revenue = revenue;
+        this.expenses = expenses;
+    }
+
+    @Override
+    public double calculateTax() {
+        double profit = revenue - expenses;
+        return profit > 0 ? profit * 0.2 : 0; // Thuế 20% lợi nhuận
+    }
+
+    @Override
+    public String getTaxInfo() {
+        return String.format("DN: %-15s | Lợi nhuận: %6.0f | Thuế: %10.0f",
+                name, (revenue - expenses), calculateTax());
+    }
+}
+
+public class InterfaceArrayDemo {
+    public static void main(String[] args) {
+        // Mảng đối tượng KHÁC NHAU cùng implement 1 interface
+        Taxable[] taxpayers = {
+            new Employee("Nguyễn Dũng", 20_000_000),
+            new Employee("Trần An", 15_000_000),
+            new FreelanceWorker("Lê Hùng", 30_000_000),
+            new Business("TechCorp", 500_000_000, 300_000_000),
+            new FreelanceWorker("Phạm Mai", 10_000_000),
+            new Business("SmallShop", 50_000_000, 60_000_000)
+        };
+
+        System.out.println("========= BÁO CÁO THUẾ =========");
+        double totalTax = 0;
+        for (Taxable t : taxpayers) {
+            System.out.println(t.getTaxInfo());
+            totalTax += t.calculateTax();
+        }
+        System.out.println("==================================");
+        System.out.printf("TỔNG THUẾ THU ĐƯỢC: %,.0f VNĐ%n", totalTax);
+    }
+}
+```
+
+---
+
+## 10. Sự khác nhau giữa Abstract và Interface
+
+| Tiêu chí | Abstract Class | Interface |
+|---|---|---|
+| **Từ khóa** | `extends` | `implements` |
+| **Số lượng kế thừa** | Chỉ extends **1** class | Implements **nhiều** interface |
+| **Constructor** | ✅ Có | ❌ Không |
+| **Thuộc tính** | Mọi loại (private, protected, public) | Chỉ `public static final` (hằng số) |
+| **Phương thức** | Có cả abstract và bình thường | Mặc định abstract (Java 8+: có default, static) |
+| **Mối quan hệ** | **IS-A** (Chó **là một** Động vật) | **CAN-DO** (Chó **có thể** Bơi) |
+| **Khi nào dùng** | Các class có quan hệ **cha-con** tự nhiên | Các class **không liên quan** nhưng cùng khả năng |
+| **Ví dụ** | `Animal` → Dog, Cat | `Swimmable` → Dog, Fish, Person |
+
+```java
+// Abstract: Quan hệ IS-A
+abstract class Animal { }
+class Dog extends Animal { }  // Dog IS-A Animal ✅
+
+// Interface: Quan hệ CAN-DO
+interface Swimmable { void swim(); }
+interface Trainable { void train(); }
+
+class Dog extends Animal implements Swimmable, Trainable {
+    // Dog IS-A Animal
+    // Dog CAN swim
+    // Dog CAN be trained
+    public void swim() { System.out.println("Chó bơi 🐕"); }
+    public void train() { System.out.println("Chó được huấn luyện"); }
+}
+
+class Fish extends Animal implements Swimmable {
+    // Fish IS-A Animal
+    // Fish CAN swim
+    // Fish CANNOT be trained
+    public void swim() { System.out.println("Cá bơi 🐟"); }
+}
+```
+
+---
+
+## 11. Từ khóa static
+
+```java
+public class StaticDemo {
+
+    // ===== 1. STATIC FIELD (Biến tĩnh) =====
+    // Dùng CHUNG cho tất cả đối tượng, thuộc về CLASS (không thuộc đối tượng)
+    static int instanceCount = 0;
+    static final String COMPANY = "TechCorp"; // Hằng số
+
+    // Instance field (mỗi đối tượng có riêng)
+    String name;
+
+    public StaticDemo(String name) {
+        this.name = name;
+        instanceCount++; // Mỗi lần tạo đối tượng → tăng biến dùng chung
+    }
+
+    // ===== 2. STATIC METHOD (Phương thức tĩnh) =====
+    // Gọi qua TÊN CLASS, không cần tạo đối tượng
+    // KHÔNG thể truy cập biến instance (vì không có đối tượng cụ thể)
+    public static int getInstanceCount() {
+        // System.out.println(name); // ❌ LỖI! Không truy cập instance field trong static method
+        return instanceCount;
+    }
+
+    public static double celsiusToFahrenheit(double c) {
+        return c * 9.0 / 5.0 + 32;
+    }
+
+    // ===== 3. STATIC BLOCK (Khối tĩnh) =====
+    // Chạy MỘT LẦN khi class được load vào bộ nhớ
+    static {
+        System.out.println("⚡ Static block chạy khi class được load");
+    }
+
+    // ===== 4. STATIC INNER CLASS =====
+    static class Helper {
+        public static String formatName(String name) {
+            return name.trim().toUpperCase();
+        }
+    }
+
+    public static void main(String[] args) {
+        // Gọi static method KHÔNG cần tạo đối tượng
+        System.out.println("25°C = " + celsiusToFahrenheit(25) + "°F");
+
+        // Static field dùng chung
+        StaticDemo a = new StaticDemo("A");
+        StaticDemo b = new StaticDemo("B");
+        StaticDemo c = new StaticDemo("C");
+        System.out.println("Đã tạo " + StaticDemo.getInstanceCount() + " đối tượng"); // 3
+
+        // Static inner class
+        System.out.println(StaticDemo.Helper.formatName("  hello  ")); // HELLO
+    }
+}
+```
+
+**Tóm tắt static:**
+
+| Vị trí `static` | Ý nghĩa | Cách truy cập |
+|---|---|---|
+| `static` **field** | Biến dùng chung cho tất cả đối tượng | `ClassName.field` |
+| `static` **method** | Hàm thuộc class, không cần đối tượng | `ClassName.method()` |
+| `static` **block** | Chạy 1 lần khi class được load | Tự động |
+| `static` **inner class** | Class lồng không cần đối tượng bao ngoài | `Outer.Inner` |
+
+---
+
+## 12. Access Modifier
+
+```java
+// File: AccessModifierDemo.java
+
+class MyClass {
+    public    String pubField  = "public";     // Truy cập MỌI NƠI
+    protected String proField  = "protected";  // Cùng package + class con (kể cả khác package)
+              String defField  = "default";    // Chỉ cùng package (package-private)
+    private   String priField  = "private";    // Chỉ trong CHÍNH class này
+
+    public    void pubMethod()  { System.out.println("public method"); }
+    protected void proMethod()  { System.out.println("protected method"); }
+              void defMethod()  { System.out.println("default method"); }
+    private   void priMethod()  { System.out.println("private method"); }
+
+    public void testInsideClass() {
+        // Trong chính class → truy cập ĐƯỢC TẤT CẢ
+        System.out.println(pubField);  // ✅
+        System.out.println(proField);  // ✅
+        System.out.println(defField);  // ✅
+        System.out.println(priField);  // ✅
+    }
+}
+
+// Class cùng package
+class SamePackageClass {
+    public void test() {
+        MyClass obj = new MyClass();
+        System.out.println(obj.pubField);  // ✅ public
+        System.out.println(obj.proField);  // ✅ protected (cùng package)
+        System.out.println(obj.defField);  // ✅ default (cùng package)
+        // System.out.println(obj.priField); // ❌ private
+    }
+}
+
+// Class con khác package
+// class ChildDiffPackage extends MyClass {
+//     void test() {
+//         System.out.println(pubField);  // ✅ public
+//         System.out.println(proField);  // ✅ protected (class con)
+//         // System.out.println(defField); // ❌ default (khác package)
+//         // System.out.println(priField); // ❌ private
+//     }
+// }
+```
+
+| Modifier | Cùng Class | Cùng Package | Class Con (khác Package) | Khác Package |
+|---|---|---|---|---|
+| `public` | ✅ | ✅ | ✅ | ✅ |
+| `protected` | ✅ | ✅ | ✅ | ❌ |
+| `default` (không viết gì) | ✅ | ✅ | ❌ | ❌ |
+| `private` | ✅ | ❌ | ❌ | ❌ |
+
+```
+Phạm vi: public > protected > default > private
+
+Quy tắc ngón tay cái:
+- Thuộc tính → private (đóng gói)
+- Getter/Setter → public
+- Method nội bộ → private
+- Method cho class con → protected
+- Method cho bên ngoài → public
+```
+
+---
+
+## 13. Nạp chồng hàm - Các hàm cùng tên khác tham số
+
+```java
+public class OverloadingDemo {
+
+    // Cùng tên "print", nhưng KHÁC tham số
+    public static void print(String message) {
+        System.out.println("[String] " + message);
+    }
+
+    public static void print(int number) {
+        System.out.println("[int] " + number);
+    }
+
+    public static void print(double number) {
+        System.out.println("[double] " + number);
+    }
+
+    public static void print(String message, int times) {
+        for (int i = 0; i < times; i++) {
+            System.out.println("[repeat " + (i + 1) + "] " + message);
+        }
+    }
+
+    public static void print(int... numbers) {
+        System.out.print("[varargs] ");
+        for (int n : numbers) System.out.print(n + " ");
+        System.out.println();
+    }
+
+    public static void main(String[] args) {
+        print("Hello");           // [String] Hello
+        print(42);                // [int] 42
+        print(3.14);             // [double] 3.14
+        print("Java", 3);       // [repeat 1] Java, [repeat 2] Java, [repeat 3] Java
+        print(1, 2, 3, 4, 5);    // [varargs] 1 2 3 4 5
+    }
+}
+```
+
+---
+
+## 14. Từ khóa final
+
+```java
+// ===== 1. final CLASS - Không thể kế thừa =====
+final class ImmutablePoint {
+    private final int x, y;
+
+    public ImmutablePoint(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public int getX() { return x; }
+    public int getY() { return y; }
+}
+// class ExtendedPoint extends ImmutablePoint {} // ❌ LỖI! Không thể extends final class
+
+// ===== 2. final METHOD - Không thể ghi đè =====
+class Base {
+    public final void criticalMethod() {
+        System.out.println("Phương thức quan trọng - KHÔNG được ghi đè!");
+    }
+
+    public void normalMethod() {
+        System.out.println("Có thể ghi đè");
+    }
+}
+
+class Child extends Base {
+    // @Override
+    // public void criticalMethod() {} // ❌ LỖI! Không thể override final method
+
+    @Override
+    public void normalMethod() {
+        System.out.println("Đã ghi đè thành công");
+    }
+}
+
+// ===== 3. final VARIABLE - Không thể gán lại =====
+public class FinalDemo {
+    // final field - phải gán giá trị (khi khai báo hoặc trong constructor)
+    private final String name;
+    private final int id;
+
+    public FinalDemo(String name, int id) {
+        this.name = name;  // Gán trong constructor → OK
+        this.id = id;
+    }
+
+    public static void main(String[] args) {
+        final int MAX = 100;
+        // MAX = 200; // ❌ LỖI! Không thể gán lại final variable
+
+        final int[] arr = {1, 2, 3};
+        arr[0] = 99;         // ✅ OK - sửa NỘI DUNG mảng được
+        // arr = new int[5]; // ❌ LỖI - không thể gán THAM CHIẾU mới
+
+        // Ví dụ tổng hợp
+        final double PI = 3.14159265;
+        final String GREETING = "Hello";
+        System.out.println("PI = " + PI);
+        System.out.println("GREETING = " + GREETING);
+    }
+}
+```
+
+| Vị trí `final` | Ý nghĩa |
+|---|---|
+| `final` **class** | Class **không thể bị kế thừa** (VD: `String`, `Integer`) |
+| `final` **method** | Method **không thể bị override** |
+| `final` **variable** | Biến **không thể gán lại** (hằng số) |
+
+---
+
+## 15. Biến static, biến final, hằng số
+
+```java
+public class StaticFinalConst {
+    // Biến static - dùng chung cho tất cả đối tượng
+    static int count = 0;                // Có thể thay đổi
+
+    // Biến final - gán 1 lần, không đổi
+    final String name;                    // Mỗi đối tượng 1 giá trị khác nhau
+
+    // HẰNG SỐ = static + final - dùng chung VÀ không đổi
+    static final double PI = 3.14159265;
+    static final int MAX_SIZE = 100;
+    static final String APP_NAME = "MyApp";
+
+    public StaticFinalConst(String name) {
+        this.name = name;
+        count++;
+    }
+
+    public static void main(String[] args) {
+        StaticFinalConst a = new StaticFinalConst("A");
+        StaticFinalConst b = new StaticFinalConst("B");
+
+        System.out.println("count = " + StaticFinalConst.count);  // 2 (static: dùng chung)
+        System.out.println("a.name = " + a.name);  // A (final: riêng mỗi đối tượng)
+        System.out.println("b.name = " + b.name);  // B
+
+        System.out.println("PI = " + PI);            // static final: hằng số
+        System.out.println("MAX = " + MAX_SIZE);
+    }
+}
+```
+
+| Loại biến | `static` | `final` | Đặc điểm | Ví dụ |
+|---|---|---|---|---|
+| Biến thường | ❌ | ❌ | Mỗi đối tượng riêng, thay đổi được | `int age = 20;` |
+| Biến static | ✅ | ❌ | Dùng chung, thay đổi được | `static int count = 0;` |
+| Biến final | ❌ | ✅ | Riêng mỗi đối tượng, gán 1 lần | `final String name;` |
+| **Hằng số** | ✅ | ✅ | Dùng chung, không đổi | `static final double PI = 3.14;` |
+
+---
+
+## 16. Toán tử instanceof
+
+```java
+class Animal { }
+class Dog extends Animal { }
+class Cat extends Animal { }
+
+interface Swimmable { }
+class Labrador extends Dog implements Swimmable { }
+
+public class InstanceOfDemo {
+    public static void main(String[] args) {
+        Animal myDog = new Dog();
+        Animal myCat = new Cat();
+        Animal myLab = new Labrador();
+
+        // instanceof kiểm tra đối tượng có phải là instance của class/interface không
+        System.out.println(myDog instanceof Dog);       // true
+        System.out.println(myDog instanceof Animal);    // true  (Dog IS-A Animal)
+        System.out.println(myDog instanceof Cat);       // false
+        System.out.println(myLab instanceof Swimmable); // true  (Labrador implements Swimmable)
+        System.out.println(myLab instanceof Dog);       // true  (Labrador extends Dog)
+        System.out.println(null instanceof Animal);     // false (null luôn là false)
+
+        // Ứng dụng: Ép kiểu an toàn
+        Animal[] animals = {new Dog(), new Cat(), new Labrador()};
+        for (Animal a : animals) {
+            if (a instanceof Labrador lab) {        // Pattern matching (Java 16+)
+                System.out.println("Labrador tìm thấy!");
+            } else if (a instanceof Dog) {
+                System.out.println("Đây là chó");
+                Dog d = (Dog) a;  // Ép kiểu an toàn vì đã kiểm tra instanceof
+            } else if (a instanceof Cat) {
+                System.out.println("Đây là mèo");
+            }
+        }
+    }
+}
+```
+
+---
+
+## 17. Các lớp Wrapper
+
+```java
+public class WrapperDemo {
+    public static void main(String[] args) {
+        // Wrapper = Bọc kiểu nguyên thủy thành ĐỐI TƯỢNG
+        // int → Integer, double → Double, char → Character, boolean → Boolean...
+
+        // ===== AUTOBOXING (tự động primitive → Wrapper) =====
+        Integer num1 = 42;           // int → Integer (autoboxing)
+        Double  num2 = 3.14;        // double → Double
+        Boolean flag = true;         // boolean → Boolean
+        Character ch = 'A';          // char → Character
+
+        // ===== UNBOXING (tự động Wrapper → primitive) =====
+        int x = num1;                // Integer → int (unboxing)
+        double y = num2;             // Double → double
+
+        // ===== TẠI SAO CẦN WRAPPER? =====
+        // 1. Collection chỉ chứa Object, không chứa primitive
+        java.util.List<Integer> list = new java.util.ArrayList<>();
+        list.add(10);    // autoboxing: int 10 → Integer.valueOf(10)
+        list.add(20);
+        int sum = list.get(0) + list.get(1); // unboxing
+
+        // 2. Có thể là null (primitive không thể null)
+        Integer nullableAge = null;  // ✅ OK
+        // int age = null;           // ❌ LỖI!
+
+        // 3. Các hàm tiện ích
+        System.out.println("Max int: " + Integer.MAX_VALUE);
+        System.out.println("Parse: " + Integer.parseInt("123"));
+        System.out.println("Hex: " + Integer.toHexString(255));
+        System.out.println("Binary: " + Integer.toBinaryString(42));
+        System.out.println("Compare: " + Integer.compare(5, 10)); // -1
+
+        // ===== BẢNG WRAPPER =====
+        // byte → Byte       | short → Short
+        // int → Integer      | long → Long
+        // float → Float      | double → Double
+        // char → Character   | boolean → Boolean
+
+        // ⚠️ CHÚ Ý: So sánh Wrapper phải dùng .equals()
+        Integer a = 200, b = 200;
+        System.out.println(a == b);       // false! (so sánh tham chiếu)
+        System.out.println(a.equals(b));  // true   (so sánh giá trị)
+
+        // Nhưng Integer cache từ -128 đến 127:
+        Integer c = 100, d = 100;
+        System.out.println(c == d);       // true! (cùng object trong cache)
+    }
+}
+```
+
+---
+
+## 18. Chuyển đổi (cast) kiểu dữ liệu
+
+```java
+public class CastingDemo {
+    public static void main(String[] args) {
+        // ===== 1. WIDENING (Mở rộng - tự động, an toàn) =====
+        // byte → short → int → long → float → double
+        byte b = 42;
+        int i = b;       // byte → int (tự động)
+        long l = i;      // int → long (tự động)
+        double d = l;    // long → double (tự động)
+        System.out.println("Widening: byte " + b + " → double " + d);
+
+        // ===== 2. NARROWING (Thu hẹp - thủ công, có thể mất dữ liệu) =====
+        double pi = 3.99;
+        int intPi = (int) pi;           // double → int (mất phần thập phân)
+        System.out.println("Narrowing: " + pi + " → " + intPi); // 3 (cắt, không làm tròn!)
+
+        long bigNum = 130;
+        byte smallNum = (byte) bigNum;   // long → byte (tràn số!)
+        System.out.println("Overflow: long " + bigNum + " → byte " + smallNum); // -126
+
+        // ===== 3. ÉP KIỂU OBJECT (Upcasting / Downcasting) =====
+        // Upcasting: class con → class cha (tự động, an toàn)
+        Animal animal = new Dog();    // Dog → Animal (upcasting)
+        animal.eat();                  // Gọi eat() của Dog (đa hình)
+        // animal.bark();             // ❌ LỖI! Animal không có bark()
+
+        // Downcasting: class cha → class con (thủ công, cần kiểm tra)
+        if (animal instanceof Dog) {
+            Dog dog = (Dog) animal;    // Animal → Dog (downcasting)
+            dog.bark();                // ✅ OK! Bây giờ gọi được bark()
+        }
+
+        // Ép kiểu giữa các primitive
+        char c = 'A';
+        int ascii = c;                // char → int: 65
+        char fromInt = (char) 66;     // int → char: 'B'
+        System.out.println("'A' = " + ascii + ", 66 = '" + fromInt + "'");
+    }
+}
+
+class Animal { public void eat() { System.out.println("Eating..."); } }
+class Dog extends Animal { public void bark() { System.out.println("Woof!"); } }
+```
+
+---
+
+## 19. Parse giá trị từ String sang số
+
+```java
+public class ParseDemo {
+    public static void main(String[] args) {
+        // ===== STRING → SỐ =====
+        int i    = Integer.parseInt("123");
+        long l   = Long.parseLong("9999999999");
+        float f  = Float.parseFloat("3.14");
+        double d = Double.parseDouble("2.71828");
+        byte b   = Byte.parseByte("100");
+        short s  = Short.parseShort("30000");
+
+        System.out.println("int:    " + i);    // 123
+        System.out.println("long:   " + l);    // 9999999999
+        System.out.println("float:  " + f);    // 3.14
+        System.out.println("double: " + d);    // 2.71828
+
+        // ===== SỐ → STRING =====
+        String s1 = String.valueOf(42);
+        String s2 = Integer.toString(42);
+        String s3 = "" + 42;                  // Nối chuỗi (kém hiệu quả nhất)
+
+        // ===== XỬ LÝ LỖI KHI PARSE =====
+        try {
+            int bad = Integer.parseInt("abc"); // NumberFormatException!
+        } catch (NumberFormatException e) {
+            System.out.println("❌ Không thể parse 'abc' → int: " + e.getMessage());
+        }
+
+        // Parse số với hệ cơ số
+        int fromBin = Integer.parseInt("1010", 2);   // Binary → 10
+        int fromHex = Integer.parseInt("FF", 16);     // Hex → 255
+        System.out.println("1010 (bin) = " + fromBin);
+        System.out.println("FF (hex) = " + fromHex);
+    }
+}
+```
+
+---
+
+## 20. Danh sách liên kết (Linked List)
+
+```java
+// ===== TỰ TẠO CLASS DANH SÁCH LIÊN KẾT =====
+class MyLinkedList {
+    // Node: phần tử trong danh sách liên kết
+    private static class Node {
+        int data;
+        Node next;
+
+        Node(int data) {
+            this.data = data;
+            this.next = null;
+        }
+    }
+
+    private Node head; // Phần tử đầu tiên
+    private int size;
+
+    public MyLinkedList() {
+        this.head = null;
+        this.size = 0;
+    }
+
+    // ===== THÊM PHẦN TỬ VÀO CUỐI =====
+    public void add(int data) {
+        Node newNode = new Node(data);
+        if (head == null) {
+            head = newNode;
+        } else {
+            Node current = head;
+            while (current.next != null) {
+                current = current.next;
+            }
+            current.next = newNode;
+        }
+        size++;
+    }
+
+    // ===== THÊM PHẦN TỬ VÀO ĐẦU =====
+    public void addFirst(int data) {
+        Node newNode = new Node(data);
+        newNode.next = head;
+        head = newNode;
+        size++;
+    }
+
+    // ===== XÓA PHẦN TỬ THEO GIÁ TRỊ =====
+    public boolean remove(int data) {
+        if (head == null) return false;
+
+        // Xóa phần tử đầu
+        if (head.data == data) {
+            head = head.next;
+            size--;
+            return true;
+        }
+
+        // Xóa phần tử ở giữa/cuối
+        Node current = head;
+        while (current.next != null) {
+            if (current.next.data == data) {
+                current.next = current.next.next; // Bỏ qua node cần xóa
+                size--;
+                return true;
+            }
+            current = current.next;
+        }
+        return false; // Không tìm thấy
+    }
+
+    // ===== KIỂM TRA PHẦN TỬ CÓ TỒN TẠI =====
+    public boolean contains(int data) {
+        Node current = head;
+        while (current != null) {
+            if (current.data == data) return true;
+            current = current.next;
+        }
+        return false;
+    }
+
+    // ===== KÍCH THƯỚC =====
+    public int size() { return size; }
+
+    // ===== IN DANH SÁCH =====
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("[");
+        Node current = head;
+        while (current != null) {
+            sb.append(current.data);
+            if (current.next != null) sb.append(" → ");
+            current = current.next;
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+}
+
+// ===== SỬ DỤNG =====
+public class LinkedListDemo {
+    public static void main(String[] args) {
+        MyLinkedList list = new MyLinkedList();
+
+        // Thêm phần tử
+        list.add(10);
+        list.add(20);
+        list.add(30);
+        list.addFirst(5);
+        System.out.println("Sau khi thêm: " + list);
+        // [5 → 10 → 20 → 30]
+
+        // Kiểm tra tồn tại
+        System.out.println("Có 20? " + list.contains(20));  // true
+        System.out.println("Có 99? " + list.contains(99));  // false
+
+        // Xóa phần tử
+        list.remove(20);
+        System.out.println("Sau xóa 20: " + list);  // [5 → 10 → 30]
+        System.out.println("Size: " + list.size());   // 3
+    }
+}
+```
+
+```
+Cấu trúc Linked List trong bộ nhớ:
+
+head
+  │
+  ▼
+┌───┬───┐    ┌───┬───┐    ┌───┬───┐    ┌───┬──────┐
+│ 5 │ ──┼───►│10 │ ──┼───►│20 │ ──┼───►│30 │ null │
+└───┴───┘    └───┴───┘    └───┴───┘    └───┴──────┘
+ data next    data next    data next    data  next
+
+Xóa phần tử 20:
+  Trước: 10.next → [20] → 30
+  Sau:   10.next → 30  (bỏ qua 20, GC thu hồi)
+```
+
+---
+
+## 21. So sánh DSLK và Mảng truyền thống
+
+| Tiêu chí | Mảng (Array) | Danh sách liên kết (Linked List) |
+|---|---|---|
+| **Kích thước** | **Cố định** khi khởi tạo | **Linh hoạt**, thêm/xóa tự do |
+| **Bộ nhớ** | Liên tiếp (contiguous) | Rời rạc (scattered) |
+| **Truy cập phần tử** | **O(1)** - trực tiếp qua index | **O(n)** - phải duyệt từ đầu |
+| **Thêm/Xóa đầu** | **O(n)** - phải dịch chuyển | **O(1)** - chỉ đổi con trỏ |
+| **Thêm/Xóa cuối** | **O(1)** (nếu còn chỗ) | **O(n)** (phải duyệt đến cuối) |
+| **Thêm/Xóa giữa** | **O(n)** - phải dịch chuyển | **O(1)** (nếu đã có vị trí) |
+| **Bộ nhớ phụ** | Không tốn thêm | Tốn thêm cho con trỏ `next` |
+| **Cache friendly** | ✅ Tốt (bộ nhớ liên tiếp) | ❌ Kém (bộ nhớ rời rạc) |
+| **Khi nào dùng** | Biết trước kích thước, truy cập ngẫu nhiên nhiều | Thêm/xóa nhiều, kích thước thay đổi |
+
+---
+
+## 22. Khai báo chuỗi, cắt chuỗi, nối chuỗi
+
+```java
+public class StringDemo {
+    public static void main(String[] args) {
+        // ===== KHAI BÁO =====
+        String s1 = "Hello World";                // String literal (String pool)
+        String s2 = new String("Hello World");    // new object (Heap)
+        String s3 = "Hello" + " " + "World";     // Nối chuỗi
+
+        // ===== CẮT CHUỖI =====
+        String text = "Java Programming Language";
+
+        // substring(beginIndex) - từ vị trí đến hết
+        System.out.println(text.substring(5));       // "Programming Language"
+
+        // substring(beginIndex, endIndex) - từ vị trí đến trước endIndex
+        System.out.println(text.substring(5, 16));   // "Programming"
+
+        // charAt(index) - lấy ký tự tại vị trí
+        System.out.println(text.charAt(0));           // 'J'
+
+        // split(regex) - tách chuỗi
+        String csv = "Dũng,22,CNTT,9.5";
+        String[] parts = csv.split(",");
+        // parts = ["Dũng", "22", "CNTT", "9.5"]
+
+        // trim() - xóa khoảng trắng đầu cuối
+        String padded = "  Hello  ";
+        System.out.println(padded.trim());            // "Hello"
+
+        // ===== NỐI CHUỖI =====
+        // Cách 1: Toán tử +
+        String full = "Hello" + " " + "World";
+
+        // Cách 2: concat()
+        String joined = "Hello".concat(" World");
+
+        // Cách 3: String.format()
+        String formatted = String.format("%s có %d tuổi, GPA: %.1f", "Dũng", 22, 8.5);
+
+        // Cách 4: String.join() (Java 8+)
+        String result = String.join(", ", "Java", "Python", "C++");
+        // "Java, Python, C++"
+
+        // ===== CÁC HÀM HỮU ÍCH =====
+        System.out.println("Hello".length());             // 5
+        System.out.println("Hello".toUpperCase());        // "HELLO"
+        System.out.println("HELLO".toLowerCase());        // "hello"
+        System.out.println("Hello".contains("ell"));      // true
+        System.out.println("Hello".startsWith("He"));     // true
+        System.out.println("Hello".endsWith("lo"));       // true
+        System.out.println("Hello".indexOf("l"));         // 2 (vị trí đầu tiên)
+        System.out.println("Hello".lastIndexOf("l"));     // 3
+        System.out.println("Hello".replace("l", "L"));    // "HeLLo"
+        System.out.println("Hello".equals("hello"));      // false
+        System.out.println("Hello".equalsIgnoreCase("hello")); // true
+        System.out.println("  Hi  ".strip());             // "Hi" (Java 11+)
+        System.out.println("Hello".isEmpty());            // false
+        System.out.println("Hello".isBlank());            // false (Java 11+)
+    }
+}
+```
+
+---
+
+## 23. StringBuilder và StringTokenizer
+
+```java
+import java.util.StringTokenizer;
+
+public class StringBuilderTokenizerDemo {
+    public static void main(String[] args) {
+        // ===== STRINGBUILDER =====
+        // String là IMMUTABLE (bất biến) - mỗi lần sửa = tạo object mới
+        // StringBuilder là MUTABLE (thay đổi được) - sửa trực tiếp
+
+        StringBuilder sb = new StringBuilder();
+
+        // Thêm vào cuối
+        sb.append("Hello");
+        sb.append(" ");
+        sb.append("World");
+        System.out.println(sb);  // "Hello World"
+
+        // Chèn vào vị trí
+        sb.insert(5, " Beautiful");
+        System.out.println(sb);  // "Hello Beautiful World"
+
+        // Xóa
+        sb.delete(5, 15);  // Xóa từ index 5 đến 14
+        System.out.println(sb);  // "Hello World"
+
+        // Thay thế
+        sb.replace(6, 11, "Java");
+        System.out.println(sb);  // "Hello Java"
+
+        // Đảo ngược
+        sb.reverse();
+        System.out.println(sb);  // "avaJ olleH"
+
+        sb.reverse(); // Đảo lại
+
+        // Chuyển thành String
+        String result = sb.toString();
+
+        // Method chaining
+        String chain = new StringBuilder()
+                .append("Tên: ").append("Dũng")
+                .append(", Tuổi: ").append(22)
+                .append(", GPA: ").append(8.5)
+                .toString();
+        System.out.println(chain);
+
+        // ===== STRINGTOKENIZER =====
+        // Tách chuỗi theo delimiter (tương tự split nhưng cũ hơn)
+        String data = "Nguyễn Dũng;22;CNTT;Hà Nội";
+        StringTokenizer st = new StringTokenizer(data, ";");
+
+        System.out.println("\n===== StringTokenizer =====");
+        System.out.println("Số token: " + st.countTokens()); // 4
+
+        while (st.hasMoreTokens()) {
+            System.out.println("Token: " + st.nextToken());
+        }
+        // Token: Nguyễn Dũng
+        // Token: 22
+        // Token: CNTT
+        // Token: Hà Nội
+
+        // Nhiều delimiter
+        String mixed = "apple,banana;cherry:date";
+        StringTokenizer st2 = new StringTokenizer(mixed, ",;:");
+        while (st2.hasMoreTokens()) {
+            System.out.println(st2.nextToken());
+        }
+    }
+}
+```
+
+---
+
+## 24. So sánh cộng String và StringBuilder
+
+```java
+public class StringVsBuilderPerf {
+    public static void main(String[] args) {
+        int iterations = 100_000;
+
+        // ===== STRING CONCATENATION (CHẬM) =====
+        long start = System.currentTimeMillis();
+        String s = "";
+        for (int i = 0; i < iterations; i++) {
+            s += "a"; // Mỗi lần tạo ĐỐI TƯỢNG MỚI trên heap!
+        }
+        long timeString = System.currentTimeMillis() - start;
+
+        // ===== STRINGBUILDER (NHANH) =====
+        start = System.currentTimeMillis();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < iterations; i++) {
+            sb.append("a"); // Sửa trực tiếp buffer bên trong
+        }
+        String result = sb.toString();
+        long timeBuilder = System.currentTimeMillis() - start;
+
+        System.out.printf("String +:      %d ms%n", timeString);    // ~3000-5000 ms
+        System.out.printf("StringBuilder: %d ms%n", timeBuilder);   // ~2-5 ms
+        System.out.printf("Nhanh hơn: ~%dx%n", timeString / Math.max(timeBuilder, 1));
+    }
+}
+```
+
+```
+Tại sao String + chậm?
+
+Mỗi lần s += "a":
+  Lần 1: s = "" + "a"         → tạo mới "a" (1 object)
+  Lần 2: s = "a" + "a"        → tạo mới "aa" (1 object, "a" cũ bị bỏ)
+  Lần 3: s = "aa" + "a"       → tạo mới "aaa" (1 object, "aa" bị bỏ)
+  ...
+  → 100,000 vòng = tạo 100,000 đối tượng String trên Heap → rất chậm!
+
+StringBuilder sửa trực tiếp buffer:
+  sb.append("a") → Thêm 'a' vào mảng char[] bên trong
+  → Chỉ 1 object từ đầu đến cuối → rất nhanh!
+```
+
+| Tiêu chí | String + | StringBuilder |
+|---|---|---|
+| **Tốc độ** | ❌ Chậm (tạo object mới mỗi lần) | ✅ Nhanh (sửa trực tiếp) |
+| **Bộ nhớ** | ❌ Tốn (nhiều object tạm) | ✅ Tiết kiệm |
+| **Thread-safe** | ✅ (immutable) | ❌ (dùng `StringBuffer` nếu cần thread-safe) |
+| **Dùng khi** | Nối ít chuỗi, code đơn giản | Nối nhiều chuỗi, trong vòng lặp |
+
+---
+
+## 25. Nạp chồng toString
+
+```java
+class Employee {
+    private int id;
+    private String name;
+    private String department;
+    private double salary;
+
+    public Employee(int id, String name, String department, double salary) {
+        this.id = id;
+        this.name = name;
+        this.department = department;
+        this.salary = salary;
+    }
+
+    // KHÔNG override toString() → in ra: Employee@1b6d3586 (địa chỉ hash)
+
+    // GHI ĐÈ toString() → in ra thông tin dễ đọc
+    @Override
+    public String toString() {
+        return String.format("Employee{id=%d, name='%s', dept='%s', salary=$%,.2f}",
+                id, name, department, salary);
+    }
+}
+
+public class ToStringDemo {
+    public static void main(String[] args) {
+        Employee emp = new Employee(1, "Nguyễn Dũng", "IT", 25_000_000);
+
+        // toString() được gọi tự động khi:
+        System.out.println(emp);                // 1. In đối tượng
+        String info = "Nhân viên: " + emp;      // 2. Nối chuỗi
+        System.out.println(info);
+
+        // Mảng đối tượng
+        Employee[] team = {
+            new Employee(1, "Dũng", "IT", 25_000_000),
+            new Employee(2, "An", "HR", 20_000_000),
+            new Employee(3, "Bình", "Sales", 22_000_000)
+        };
+        for (Employee e : team) {
+            System.out.println(e); // Tự gọi toString()
+        }
+    }
+}
+```
+
+---
+
+## 26. Hashing
+
+### 26.1 Hashing là gì?
+
+**Hashing** là quá trình biến đổi dữ liệu đầu vào (có kích thước **bất kỳ**) thành một giá trị đầu ra có kích thước **cố định** (gọi là **hash value** hoặc **digest**).
+
+```
+Đầu vào (bất kỳ kích thước)              Hàm Hash          Đầu ra (kích thước cố định)
+─────────────────────────                 ────────           ──────────────────────────
+"Hello"                        ──────►   hash()   ────────► 0x5D41402A (32 bit)
+"Hello World, xin chào!"      ──────►   hash()   ────────► 0xA3B2C1D4 (32 bit)
+(File 10GB)                    ──────►   hash()   ────────► 0x7E8F9A0B (32 bit)
+```
+
+### 26.2 Các phương pháp và thuật toán hashing phổ biến
+
+| Thuật toán | Kích thước output | Tốc độ | Bảo mật | Dùng cho |
+|---|---|---|---|---|
+| **Division** (chia dư) | Tùy chọn | Rất nhanh | ❌ | Hash table |
+| **Multiplication** | Tùy chọn | Nhanh | ❌ | Hash table |
+| **MD5** | 128 bit (32 hex) | Nhanh | ❌ Đã bị phá | Checksum file (không dùng cho mật khẩu) |
+| **SHA-1** | 160 bit (40 hex) | Nhanh | ❌ Đã bị phá | Git commit hash |
+| **SHA-256** | 256 bit (64 hex) | Trung bình | ✅ An toàn | Blockchain, chữ ký số |
+| **CRC32** | 32 bit | Rất nhanh | ❌ | Kiểm tra lỗi truyền dữ liệu |
+| **BCrypt** | 60 chars | Chậm (cố ý) | ✅ Rất an toàn | Hash mật khẩu |
+
+---
+
+## 27. Tự tạo hàm hashing 3 số nguyên
+
+```java
+public class CustomHashDemo {
+    // ===== TỰ TẠO HÀM HASH 3 SỐ NGUYÊN → 1 SỐ NGUYÊN =====
+
+    // Cách 1: Phương pháp chia dư (Division method)
+    public static int hashDivision(int a, int b, int c) {
+        int combined = a * 31 * 31 + b * 31 + c;
+        return Math.abs(combined % 1000); // Hash value trong khoảng 0-999
+    }
+
+    // Cách 2: Phương pháp nhân (Multiplication method - Knuth)
+    public static int hashMultiplication(int a, int b, int c) {
+        double A = 0.6180339887; // (√5 - 1) / 2 (tỷ lệ vàng)
+        int combined = a * 31 * 31 + b * 31 + c;
+        double frac = (combined * A) - Math.floor(combined * A); // Phần thập phân
+        return (int) (frac * 1000); // Hash value trong khoảng 0-999
+    }
+
+    // Cách 3: XOR + shift (phổ biến trong thực tế)
+    public static int hashXOR(int a, int b, int c) {
+        int hash = 17;
+        hash = hash * 31 + a;
+        hash = hash * 31 + b;
+        hash = hash * 31 + c;
+        return Math.abs(hash);
+    }
+
+    public static void main(String[] args) {
+        int a = 10, b = 20, c = 30;
+
+        System.out.printf("hash(%d, %d, %d):%n", a, b, c);
+        System.out.println("  Division:       " + hashDivision(a, b, c));
+        System.out.println("  Multiplication: " + hashMultiplication(a, b, c));
+        System.out.println("  XOR:            " + hashXOR(a, b, c));
+
+        // Kiểm tra: cùng input → cùng output
+        System.out.println("\nCùng input → cùng hash?");
+        System.out.println("  " + hashXOR(10, 20, 30) == hashXOR(10, 20, 30)); // true
+
+        // Khác input → (thường) khác output
+        System.out.println("Khác input → khác hash?");
+        System.out.println("  hash(10,20,30) = " + hashXOR(10, 20, 30));
+        System.out.println("  hash(30,20,10) = " + hashXOR(30, 20, 10));
+    }
+}
+```
+
+---
+
+## 28. Sử dụng MD5 / CRC32 để hash chuỗi
+
+```java
+import java.security.MessageDigest;
+import java.util.zip.CRC32;
+
+public class HashAlgorithmDemo {
+    // ===== MD5 HASH =====
+    public static String md5Hash(String input) throws Exception {
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        byte[] hashBytes = md.digest(input.getBytes("UTF-8"));
+
+        // Chuyển byte[] thành hex string
+        StringBuilder sb = new StringBuilder();
+        for (byte b : hashBytes) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
+    }
+
+    // ===== CRC32 HASH =====
+    public static long crc32Hash(String input) {
+        CRC32 crc = new CRC32();
+        crc.update(input.getBytes());
+        return crc.getValue();
+    }
+
+    // ===== SHA-256 HASH =====
+    public static String sha256Hash(String input) throws Exception {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        byte[] hashBytes = md.digest(input.getBytes("UTF-8"));
+
+        StringBuilder sb = new StringBuilder();
+        for (byte b : hashBytes) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
+    }
+
+    public static void main(String[] args) throws Exception {
+        String text = "Hello World";
+
+        System.out.println("Input: \"" + text + "\"");
+        System.out.println("MD5:    " + md5Hash(text));
+        System.out.println("CRC32:  " + crc32Hash(text));
+        System.out.println("SHA256: " + sha256Hash(text));
+
+        // Cùng input → cùng hash
+        System.out.println("\nCùng input → cùng hash:");
+        System.out.println("MD5(\"Hello World\") = " + md5Hash("Hello World"));
+        System.out.println("MD5(\"Hello World\") = " + md5Hash("Hello World")); // Giống!
+
+        // Khác 1 ký tự → hash hoàn toàn khác (Avalanche effect)
+        System.out.println("\nAvalanche effect:");
+        System.out.println("MD5(\"Hello World\")  = " + md5Hash("Hello World"));
+        System.out.println("MD5(\"Hello World!\") = " + md5Hash("Hello World!"));
+    }
+}
+```
+
+---
+
+## 29. Hashing để ẩn password
+
+```java
+import java.security.MessageDigest;
+import java.security.SecureRandom;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
+
+public class PasswordHashDemo {
+    // ===== Sinh salt ngẫu nhiên =====
+    private static byte[] generateSalt() {
+        SecureRandom random = new SecureRandom();
+        byte[] salt = new byte[16];
+        random.nextBytes(salt);
+        return salt;
+    }
+
+    // ===== Hash password với salt =====
+    private static String hashPassword(String password, byte[] salt) throws Exception {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        md.update(salt);
+        byte[] hashedBytes = md.digest(password.getBytes("UTF-8"));
+
+        // Lưu cả salt + hash
+        byte[] combined = new byte[salt.length + hashedBytes.length];
+        System.arraycopy(salt, 0, combined, 0, salt.length);
+        System.arraycopy(hashedBytes, 0, combined, salt.length, hashedBytes.length);
+
+        return Base64.getEncoder().encodeToString(combined);
+    }
+
+    // ===== Kiểm tra password =====
+    private static boolean verifyPassword(String inputPassword, String storedHash)
+            throws Exception {
+        byte[] combined = Base64.getDecoder().decode(storedHash);
+
+        // Tách salt (16 bytes đầu)
+        byte[] salt = new byte[16];
+        System.arraycopy(combined, 0, salt, 0, 16);
+
+        // Hash input password với cùng salt
+        String inputHash = hashPassword(inputPassword, salt);
+
+        return storedHash.equals(inputHash);
+    }
+
+    public static void main(String[] args) throws Exception {
+        // Mô phỏng đăng ký
+        String password = "MySecretPass123";
+        byte[] salt = generateSalt();
+        String hashedPassword = hashPassword(password, salt);
+
+        System.out.println("Password gốc:  " + password);
+        System.out.println("Password hash:  " + hashedPassword);
+        System.out.println("(Lưu hash vào DB, KHÔNG lưu password gốc!)");
+
+        // Mô phỏng đăng nhập
+        System.out.println("\n--- Kiểm tra đăng nhập ---");
+        System.out.println("Đúng pass:  " + verifyPassword("MySecretPass123", hashedPassword)); // true
+        System.out.println("Sai pass:   " + verifyPassword("WrongPassword", hashedPassword));   // false
+    }
+}
+```
+
+```
+Quy trình hash password:
+
+ĐĂNG KÝ:
+  1. User nhập: "MySecretPass123"
+  2. Sinh salt ngẫu nhiên: "x7k9m2..."
+  3. Hash: SHA256("x7k9m2..." + "MySecretPass123") = "a3b2c1..."
+  4. Lưu DB: salt + hash = "x7k9m2...a3b2c1..."
+  ❌ KHÔNG lưu "MySecretPass123" vào DB!
+
+ĐĂNG NHẬP:
+  1. User nhập: "MySecretPass123"
+  2. Lấy salt từ DB: "x7k9m2..."
+  3. Hash lại: SHA256("x7k9m2..." + "MySecretPass123") = "a3b2c1..."
+  4. So sánh với hash trong DB → ✅ TRÙNG → Đăng nhập thành công!
+```
+
+---
+
+## 30. Hashtable và bảng băm
+
+```java
+public class HashTableDemo {
+
+    // ===== TỰ XÂY DỰNG HASH TABLE ĐƠN GIẢN =====
+    static class MyHashTable {
+        private static class Entry {
+            String key;
+            String value;
+            Entry next; // Xử lý va chạm bằng chaining
+
+            Entry(String key, String value) {
+                this.key = key;
+                this.value = value;
+            }
+        }
+
+        private Entry[] buckets;
+        private int size;
+        private int capacity;
+
+        public MyHashTable(int capacity) {
+            this.capacity = capacity;
+            this.buckets = new Entry[capacity];
+            this.size = 0;
+        }
+
+        // Hàm hash: key → index
+        private int hash(String key) {
+            return Math.abs(key.hashCode() % capacity);
+        }
+
+        // Thêm / cập nhật
+        public void put(String key, String value) {
+            int index = hash(key);
+            Entry current = buckets[index];
+
+            // Kiểm tra key đã tồn tại chưa
+            while (current != null) {
+                if (current.key.equals(key)) {
+                    current.value = value; // Cập nhật
+                    return;
+                }
+                current = current.next;
+            }
+
+            // Thêm mới vào đầu danh sách (chaining)
+            Entry newEntry = new Entry(key, value);
+            newEntry.next = buckets[index];
+            buckets[index] = newEntry;
+            size++;
+        }
+
+        // Tìm kiếm
+        public String get(String key) {
+            int index = hash(key);
+            Entry current = buckets[index];
+
+            while (current != null) {
+                if (current.key.equals(key)) {
+                    return current.value;
+                }
+                current = current.next;
+            }
+            return null; // Không tìm thấy
+        }
+
+        // In bảng băm
+        public void display() {
+            for (int i = 0; i < capacity; i++) {
+                System.out.printf("Bucket[%d]: ", i);
+                Entry current = buckets[i];
+                while (current != null) {
+                    System.out.printf("(%s=%s) → ", current.key, current.value);
+                    current = current.next;
+                }
+                System.out.println("null");
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        MyHashTable ht = new MyHashTable(7);
+
+        ht.put("name", "Dũng");
+        ht.put("age", "22");
+        ht.put("city", "Hà Nội");
+        ht.put("major", "CNTT");
+        ht.put("gpa", "8.5");
+
+        System.out.println("===== Cấu trúc bảng băm =====");
+        ht.display();
+
+        System.out.println("\n===== Tìm kiếm =====");
+        System.out.println("name = " + ht.get("name"));   // Dũng
+        System.out.println("age = " + ht.get("age"));     // 22
+        System.out.println("phone = " + ht.get("phone")); // null
+    }
+}
+```
+
+```
+Cấu trúc Hash Table:
+
+hash("name") = 3    hash("age") = 5    hash("city") = 3 (va chạm!)
+
+Bucket[0]: null
+Bucket[1]: null
+Bucket[2]: (gpa=8.5) → null
+Bucket[3]: (city=Hà Nội) → (name=Dũng) → null    ← Chaining (xử lý va chạm)
+Bucket[4]: (major=CNTT) → null
+Bucket[5]: (age=22) → null
+Bucket[6]: null
+
+Tìm kiếm "name":
+  1. hash("name") = 3
+  2. Đến Bucket[3]
+  3. Duyệt: city ≠ name → name == name → TÌM THẤY! → "Dũng"
+
+→ Tìm kiếm trung bình O(1), xấu nhất O(n) (tất cả va chạm cùng bucket)
+```
+
+---
+
+## 31. Ghi đè hashCode và equals
+
+### 31.1 Tại sao phải ghi đè CẢ HAI?
+
+```java
+import java.util.HashSet;
+import java.util.Objects;
+
+class Student {
+    private int id;
+    private String name;
+
+    public Student(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    // ===== GHI ĐÈ equals() =====
+    // Quy tắc: Hai đối tượng "bằng nhau" nếu có cùng id
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;              // Cùng tham chiếu → bằng
+        if (obj == null) return false;              // null → không bằng
+        if (getClass() != obj.getClass()) return false; // Khác class → không bằng
+
+        Student other = (Student) obj;
+        return this.id == other.id &&
+               Objects.equals(this.name, other.name);
+    }
+
+    // ===== GHI ĐÈ hashCode() =====
+    // QUY TẮC BẮT BUỘC: Nếu a.equals(b) == true → a.hashCode() == b.hashCode()
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name);
+    }
+
+    @Override
+    public String toString() {
+        return "Student{id=" + id + ", name='" + name + "'}";
+    }
+}
+
+public class HashCodeEqualsDemo {
+    public static void main(String[] args) {
+        Student s1 = new Student(1, "Dũng");
+        Student s2 = new Student(1, "Dũng"); // Cùng dữ liệu với s1
+        Student s3 = new Student(2, "An");
+
+        // equals()
+        System.out.println("s1.equals(s2): " + s1.equals(s2)); // true
+        System.out.println("s1.equals(s3): " + s1.equals(s3)); // false
+
+        // hashCode()
+        System.out.println("s1.hashCode(): " + s1.hashCode());
+        System.out.println("s2.hashCode(): " + s2.hashCode()); // Giống s1
+        System.out.println("s3.hashCode(): " + s3.hashCode()); // Khác
+
+        // ===== TẠI SAO PHẢI GHI ĐÈ CẢ HAI? =====
+        HashSet<Student> set = new HashSet<>();
+        set.add(s1);
+        set.add(s2); // s2 equals s1 → KHÔNG thêm vào (đúng!)
+
+        System.out.println("\nHashSet size: " + set.size()); // 1 (không trùng)
+        System.out.println("Có s2? " + set.contains(s2));    // true
+
+        // Nếu KHÔNG ghi đè hashCode():
+        // → s1 và s2 có hashCode khác nhau (mặc định theo địa chỉ bộ nhớ)
+        // → HashSet đặt chúng vào KHÁC bucket
+        // → set.contains(s2) trả về false (SAI!)
+        // → set.size() = 2 (có 2 "Dũng" trùng nhau - SAI!)
+    }
+}
+```
+
+### 31.2 Hợp đồng giữa equals và hashCode
+
+```
+QUY TẮC BẮT BUỘC (Contract):
+
+1. Nếu a.equals(b) == true  → a.hashCode() == b.hashCode()  (BẮT BUỘC)
+2. Nếu a.hashCode() == b.hashCode() → a.equals(b) CÓ THỂ true hoặc false
+                                       (hash có thể va chạm)
+3. Nếu a.equals(b) == false → hashCode có thể giống hoặc khác
+
+Vi phạm quy tắc 1 → HashSet, HashMap, HashTable hoạt động SAI!
+```
+
+```
+HashSet tìm kiếm đối tượng:
+
+1. Tính hashCode() → xác định bucket
+2. Trong bucket, dùng equals() để so sánh từng phần tử
+
+     hashCode()           equals()
+  ┌─────────────┐     ┌──────────────┐
+  │ Xác định    │────►│ So sánh chính│
+  │ bucket nào  │     │ xác trong    │
+  │ (nhanh)     │     │ bucket (chậm)│
+  └─────────────┘     └──────────────┘
+
+→ Phải ghi đè CẢ HAI để đảm bảo hoạt động đúng!
+```
+
+---
+
+> **📌 Kết thúc Phần 3: Lập Trình Hướng Đối Tượng (OOP)**
 >
-> Phần tiếp theo: [Phần 3: Lập Trình Hướng Đối Tượng (OOP)](#phần-3-lập-trình-hướng-đối-tượng-oop) *(sẽ được bổ sung)*
+> Phần tiếp theo: [Phần 4: Xử Lý Ngoại Lệ](#phần-4-xử-lý-ngoại-lệ) *(sẽ được bổ sung)*
