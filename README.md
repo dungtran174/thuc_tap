@@ -8035,7 +8035,164 @@ public class ConcurrentMapDemo {
 ---
 
 > **📌 Kết thúc Phần 8: Lập trình Đa luồng (Multi-threading)**
+
+---
+
+# Phần 9: Lập trình Lambda (Java 8)
+
+## 📌 Mục lục
+1. [Functional Interface là gì?](#1-functional-interface-là-gì)
+2. [Cấu trúc của một Lambda Expression](#2-cấu-trúc-của-một-lambda-expression)
+3. [Viết lại Thread (Runnable) bằng Lambda](#3-viết-lại-thread-runnable-bằng-lambda)
+4. [Cách viết một Custom Functional Interface](#4-cách-viết-một-custom-functional-interface)
+
+---
+
+## 1. Functional Interface là gì?
+Trước Java 8, muốn truyền một khối lệnh (function) vào một hàm khác, ta phải tạo một đối tượng từ một Interface (dùng class ẩn danh - Anonymous Class). Điều này làm code rất rườm rà.
+
+Để hỗ trợ viết code ngắn gọn (Lambda), Java giới thiệu khái niệm **Functional Interface**.
+**Định nghĩa:** Functional Interface là một Interface **CHỈ CÓ DUY NHẤT 1 PHƯƠNG THỨC TRỪU TƯỢNG (Abstract Method)**. 
+
+> 💡 **Lưu ý:**
+> - Nó có thể chứa bao nhiêu phương thức `default` hoặc `static` tùy ý, miễn là chỉ có 1 phương thức chưa được triển khai (abstract).
+> - Thường được đánh dấu bằng Annotation `@FunctionalInterface` để báo cho trình biên dịch kiểm tra (nếu bạn lỡ viết 2 hàm abstract nó sẽ báo lỗi ngay).
+> - Các interface nổi tiếng trong Java là Functional Interface: `Runnable` (chỉ có hàm `run()`), `Callable` (chỉ có hàm `call()`), `Comparator` (chỉ có hàm `compare()`).
+
+## 2. Cấu trúc của một Lambda Expression
+Lambda Expression thực chất là **cách viết tắt để triển khai cái hàm duy nhất** của một Functional Interface.
+
+### Cú pháp chung:
+```java
+(danh_sách_tham_số) -> { thân_hàm_xử_lý }
+```
+
+### Các quy tắc rút gọn:
+1. **Không cần khai báo kiểu dữ liệu** của tham số (Trình biên dịch tự hiểu).
+2. **Nếu chỉ có 1 tham số**, có thể bỏ luôn dấu ngoặc đơn `()`.
+3. **Nếu thân hàm chỉ có 1 dòng lệnh**, có thể bỏ dấu ngoặc nhọn `{}` và từ khóa `return`.
+
+### Ví dụ các biến thể:
+```java
+// 1. Không có tham số
+() -> System.out.println("Hello Lambda");
+
+// 2. Có 1 tham số (Bỏ ngoặc đơn)
+name -> System.out.println("Hello " + name);
+
+// 3. Có nhiều tham số
+(a, b) -> {
+    int sum = a + b;
+    return sum;
+}
+
+// 4. Có nhiều tham số nhưng thân hàm chỉ có 1 dòng (Rút gọn chữ return)
+(a, b) -> a + b;
+```
+
+---
+
+## 3. Viết lại Thread (Runnable) bằng Lambda
+
+`Runnable` là một Functional Interface vì nó chỉ có đúng 1 hàm `void run()`. Do đó, thay vì viết Class ẩn danh rườm rà, ta có thể thay thế hoàn toàn bằng Lambda.
+
+```java
+public class LambdaThreadDemo {
+    public static void main(String[] args) {
+        
+        // ==========================================
+        // CÁCH CŨ: DÙNG ANONYMOUS CLASS (Trước Java 8)
+        // ==========================================
+        Thread t1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                System.out.println("Luồng 1 đang chạy bằng Anonymous Class");
+            }
+        });
+        t1.start();
+
+        // ==========================================
+        // CÁCH MỚI: DÙNG LAMBDA (Từ Java 8 trở đi)
+        // ==========================================
+        // Vì Runnable chỉ có hàm run() không nhận tham số (), và trả về void
+        // Nên cấu trúc Lambda của nó sẽ là: () -> { ... }
+        Thread t2 = new Thread(() -> {
+            System.out.println("Luồng 2 đang chạy bằng Lambda (Nhiều dòng code)");
+            System.out.println("Rất gọn gàng!");
+        });
+        t2.start();
+
+        // Nếu hàm run() chỉ có 1 dòng code, rút gọn tối đa:
+        Thread t3 = new Thread(() -> System.out.println("Luồng 3 chạy siêu tốc (1 dòng)"));
+        t3.start();
+    }
+}
+```
+
+---
+
+## 4. Cách viết một Custom Functional Interface
+
+Bạn hoàn toàn có thể tự định nghĩa một Functional Interface của riêng mình để phục vụ cho các logic tính toán (ví dụ: Công thức tính lương, Thuật toán mã hóa...) và truyền nó như một tham số (Callback).
+
+### Bước 1: Định nghĩa Functional Interface
+```java
+@FunctionalInterface // Khuyên dùng để trình biên dịch kiểm soát lỗi
+interface MathOperation {
+    // Chỉ có DUY NHẤT 1 hàm chưa triển khai
+    int calculate(int a, int b); 
+    
+    // Vẫn được phép có hàm default
+    default void printInfo() {
+        System.out.println("Đây là một phép toán.");
+    }
+}
+```
+
+### Bước 2: Sử dụng Interface với Lambda
+```java
+public class CustomLambdaDemo {
+    
+    // Viết một hàm nhận Functional Interface làm tham số
+    // Đây là kĩ thuật truyền HÀM VÀO TRONG HÀM (Higher-order function)
+    public static int operate(int a, int b, MathOperation mathOp) {
+        return mathOp.calculate(a, b);
+    }
+
+    public static void main(String[] args) {
+        
+        // 1. Định nghĩa phép CỘNG (Thân hàm: a + b)
+        MathOperation addition = (a, b) -> a + b;
+        
+        // 2. Định nghĩa phép TRỪ (Thân hàm: a - b)
+        MathOperation subtraction = (a, b) -> a - b;
+        
+        // 3. Định nghĩa phép NHÂN (Nhiều dòng code)
+        MathOperation multiplication = (x, y) -> {
+            System.out.println("Đang thực hiện phép nhân...");
+            return x * y;
+        };
+
+        // GỌI HÀM VÀ TRUYỀN LAMBDA VÀO
+        System.out.println("10 + 5 = " + operate(10, 5, addition));       // 15
+        System.out.println("10 - 5 = " + operate(10, 5, subtraction));    // 5
+        System.out.println("10 * 5 = " + operate(10, 5, multiplication)); // 50
+        
+        // Thậm chí truyền thẳng Lambda vào hàm mà không cần lưu biến
+        System.out.println("10 / 2 = " + operate(10, 2, (a, b) -> a / b)); // 5
+    }
+}
+```
+
+### So sánh tại sao Lambda lại mạnh mẽ?
+- **Nếu không có Lambda:** Với mỗi phép toán (Cộng, Trừ, Nhân, Chia), bạn sẽ phải tạo ra 4 class riêng biệt (hoặc 4 cục Anonymous Class dài dòng) chỉ để `implements MathOperation`.
+- **Có Lambda:** Bạn chỉ cần truyền trực tiếp cái **công thức tính** (`a + b`, `a - b`) vào hàm `operate()`. Code tập trung 100% vào nghiệp vụ (Logic) thay vì lãng phí vào các thẻ Boilerplate code của OOP truyền thống.
+
+---
+
+> **📌 Kết thúc Phần 9: Lập trình Lambda**
 >
-> Phần tiếp theo: [Phần 9: Java 8 Features (Lambda, Stream API)](#phần-9-java-8-features) *(sẽ được bổ sung)*
+> Phần tiếp theo: [Phần 10: Stream API](#phần-10-stream-api) *(sẽ được bổ sung)*
+
 
 
