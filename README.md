@@ -7438,6 +7438,288 @@ public class DateFormatDemo {
 ---
 
 > **📌 Kết thúc Phần 6: Data Structures & Các Kiểu Dữ Liệu**
+
+---
+
+# Phần 7: Collections Framework (Bộ sưu tập)
+
+## 📌 Mục lục
+1. [Cây giao diện (Interface) của Collection](#1-cây-giao-diện-interface-của-collection)
+2. [Sự khác biệt giữa List, Set và Map](#2-sự-khác-biệt-giữa-list-set-và-map)
+3. [Phân tích List: ArrayList vs LinkedList](#3-phân-tích-list-arraylist-vs-linkedlist)
+4. [Phân tích Set: HashSet và Tầm quan trọng của equals/hashCode](#4-phân-tích-set-hashset-và-tầm-quan-trọng-của-equalshashcode)
+5. [LinkedHashSet, TreeSet và Cách sắp xếp Set](#5-linkedhashset-treeset-và-cách-sắp-xếp-set)
+6. [Phân tích Map: HashMap, TreeMap và Cách sắp xếp Map theo Value](#6-phân-tích-map-hashmap-treemap-và-cách-sắp-xếp-map-theo-value)
+7. [Interface Comparable và Hàm compareTo](#7-interface-comparable-và-hàm-compareto)
+8. [Bảng Đánh giá Tốc độ (Độ phức tạp thuật toán Big O)](#8-bảng-đánh-giá-tốc-độ-độ-phức-tạp-thuật-toán-big-o)
+
+---
+
+## 1. Cây giao diện (Interface) của Collection
+
+Trong Java, `Collections Framework` là một kiến trúc hợp nhất để lưu trữ và thao tác với nhóm các đối tượng. Phân cấp (Hierarchy) của nó gồm 2 nhánh chính hoàn toàn độc lập: **Collection** và **Map**.
+
+```text
+                  «interface»
+                   Iterable
+                       ↑ (extends)
+                  «interface»
+                  Collection
+                 /     |     \ (extends)
+               /       |       \
+       «interface» «interface» «interface»                «interface»
+          List       Queue        Set                         Map
+           |           |           |                           | (implements)
+      (implements) (implements) (implements)                /     \
+       ArrayList   LinkedList    HashSet                HashMap  TreeMap
+      LinkedList  PriorityQueue  LinkedHashSet          LinkedHashMap
+       Vector                    TreeSet
+```
+
+> ⚠️ **Lưu ý:** `Map` **KHÔNG** kế thừa từ `Collection`. Nó là một nhánh lưu trữ theo cặp Key-Value hoàn toàn riêng biệt.
+
+---
+
+## 2. Sự khác biệt giữa List, Set và Map
+
+| Đặc điểm | `List` (Danh sách) | `Set` (Tập hợp) | `Map` (Ánh xạ / Từ điển) |
+|---|---|---|---|
+| **Lưu trữ** | Lưu từng phần tử đơn lẻ | Lưu từng phần tử đơn lẻ | Lưu theo cặp `Key - Value` (Khóa - Giá trị) |
+| **Phần tử trùng lặp** | ✅ **Cho phép** trùng lặp | ❌ **Không cho phép** trùng lặp | Key **không** trùng lặp, Value **có thể** trùng lặp. |
+| **Thứ tự (Order)** | Giữ nguyên thứ tự khi chèn | Đa số là không có thứ tự | Đa số là không có thứ tự |
+| **Truy cập phần tử** | Bằng vị trí (index) `list.get(2)` | Không có index, phải dùng Loop/Iterator | Truy cập bằng Key: `map.get(key)` |
+
+---
+
+## 3. Phân tích List: ArrayList vs LinkedList
+
+Cả 2 đều implement `List`, nhưng cấu trúc dữ liệu nền tảng (underlying data structure) bên dưới lại khác nhau hoàn toàn.
+
+| Tiêu chí | `ArrayList` | `LinkedList` |
+|---|---|---|
+| **Cấu trúc bên dưới** | Mảng động (Dynamic Array) | Danh sách liên kết kép (Doubly Linked List) |
+| **Truy xuất phần tử (get)** | Rất nhanh `O(1)` (Truy xuất qua index) | Rất chậm `O(N)` (Phải duyệt từ đầu tới phần tử đó) |
+| **Thêm/Xóa ở cuối** | Nhanh `O(1)` | Nhanh `O(1)` |
+| **Thêm/Xóa ở giữa** | Chậm `O(N)` (Vì phải dịch chuyển toàn bộ mảng) | Nhanh `O(1)` (Nếu đã biết vị trí, chỉ cần bẻ lại con trỏ nối) |
+| **Ứng dụng thực tế** | Dùng 90% trường hợp (chủ yếu là Đọc dữ liệu) | Dùng khi cần thao tác Thêm/Xóa liên tục ở đầu hoặc giữa danh sách |
+
+---
+
+## 4. Phân tích Set: HashSet và Tầm quan trọng của equals/hashCode
+
+### 4.1 HashSet là gì?
+- `HashSet` là implementation phổ biến nhất của Set. Bên dưới nó thực chất sử dụng một `HashMap`.
+- Nó lưu trữ các phần tử dựa trên cơ chế **Băm (Hashing)**. Do đó, tốc độ tìm kiếm và thêm mới cực kỳ nhanh (O(1)).
+
+### 4.2 Tại sao bắt buộc phải Override cả `equals` và `hashCode`?
+Như đã đề cập ở Phần 3 (OOP), cơ chế làm việc của HashSet khi gọi hàm `add(Object)` như sau:
+1. Nó gọi `hashCode()` của đối tượng để tìm ra vị trí "ngăn kéo" (bucket) cần cất đối tượng vào.
+2. Nếu ngăn kéo trống → Đưa vào ngay.
+3. Nếu ngăn kéo đã có đối tượng (Đụng độ Hash) → Nó tiếp tục gọi hàm `equals()` để so sánh đối tượng mới với các đối tượng đang có trong ngăn kéo.
+   - Nếu `equals` trả về `true` → Nhận định là trùng lặp → **TỪ CHỐI THÊM**.
+   - Nếu `equals` trả về `false` → Nhận định là khác nhau → Thêm vào cùng ngăn kéo đó (Linked list / Red-Black Tree).
+
+> **HẬU QUẢ NẾU KHÔNG OVERRIDE:**
+> Nếu bạn tạo class `Student` mà không ghi đè 2 hàm này, Java sẽ dùng mặc định của class `Object` (so sánh địa chỉ bộ nhớ). Khi đó, dù 2 `Student` có cùng ID và Tên, chúng có địa chỉ bộ nhớ khác nhau $\rightarrow$ `hashCode` khác nhau $\rightarrow$ `HashSet` coi đó là 2 người khác nhau và sẽ thêm cả 2 (Bị trùng lặp logic hệ thống).
+
+```java
+import java.util.HashSet;
+import java.util.Objects;
+
+class User {
+    int id;
+    String name;
+
+    public User(int id, String name) { this.id = id; this.name = name; }
+
+    // PHẢI GHI ĐÈ CẢ 2 HÀM
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return id == user.id; // Chỉ so sánh ID
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id); // Sinh hash từ ID
+    }
+}
+
+public class HashSetDemo {
+    public static void main(String[] args) {
+        HashSet<User> set = new HashSet<>();
+        set.add(new User(1, "Alice"));
+        
+        // Thêm một người có cùng ID = 1
+        boolean isAdded = set.add(new User(1, "Bob")); 
+        
+        System.out.println("Có thêm được Bob không? " + isAdded); // false
+        System.out.println("Số lượng User trong set: " + set.size()); // 1
+    }
+}
+```
+
+---
+
+## 5. LinkedHashSet, TreeSet và Cách sắp xếp Set
+
+Nếu `HashSet` lưu dữ liệu lộn xộn (không có thứ tự), thì:
+- **`LinkedHashSet`**: Lưu phần tử và **giữ nguyên thứ tự chèn vào**. (Bên dưới kết hợp HashTable và Linked List).
+- **`TreeSet`**: Tự động **sắp xếp** các phần tử (theo thứ tự tăng dần của giá trị, hoặc theo một quy tắc tự định nghĩa). (Bên dưới dùng Red-Black Tree).
+
+```java
+import java.util.*;
+
+public class SetTypesDemo {
+    public static void main(String[] args) {
+        // 1. HASH SET (Lộn xộn)
+        Set<Integer> hashSet = new HashSet<>(Arrays.asList(50, 10, 30, 20, 40));
+        System.out.println("HashSet: " + hashSet); 
+        // Kết quả có thể là: [50, 20, 40, 10, 30]
+
+        // 2. LINKED HASH SET (Giữ đúng thứ tự thêm vào)
+        Set<Integer> linkedSet = new LinkedHashSet<>(Arrays.asList(50, 10, 30, 20, 40));
+        System.out.println("LinkedHashSet: " + linkedSet); 
+        // Kết quả CHẮC CHẮN là: [50, 10, 30, 20, 40]
+
+        // 3. TREE SET (Tự động sắp xếp tăng dần)
+        Set<Integer> treeSet = new TreeSet<>(Arrays.asList(50, 10, 30, 20, 40));
+        System.out.println("TreeSet: " + treeSet); 
+        // Kết quả CHẮC CHẮN là: [10, 20, 30, 40, 50]
+    }
+}
+```
+
+---
+
+## 6. Phân tích Map: HashMap, TreeMap và Cách sắp xếp Map theo Value
+
+Map lưu theo cặp Khóa - Giá trị (Key-Value).
+
+- **`HashMap`**: Tìm kiếm siêu tốc, các Key được lưu lộn xộn (Giống HashSet).
+- **`LinkedHashMap`**: Giữ nguyên thứ tự thêm vào của các Key.
+- **`TreeMap`**: Tự động sắp xếp các phần tử theo **TĂNG DẦN CỦA KEY**.
+
+### Vấn đề khó: Làm sao sắp xếp Map theo VALUE?
+`TreeMap` chỉ sắp xếp theo Key. Nếu bạn muốn sắp xếp theo Value (ví dụ: Map lưu Tên -> Điểm số, muốn sắp xếp điểm số từ cao xuống thấp), bạn phải làm theo các bước sau:
+1. Lấy toàn bộ `entrySet()` của Map đổ ra một `List`.
+2. Dùng `Collections.sort()` để sắp xếp cái List đó (tùy biến thuật toán so sánh Value).
+3. Đổ lại danh sách đã sắp xếp vào một `LinkedHashMap` (Vì LinkedHashMap mới giữ được thứ tự thêm vào).
+
+```java
+import java.util.*;
+
+public class SortMapByValue {
+    public static void main(String[] args) {
+        Map<String, Integer> scores = new HashMap<>();
+        scores.put("Alice", 85);
+        scores.put("Bob", 99);
+        scores.put("Charlie", 70);
+        scores.put("David", 90);
+
+        System.out.println("Map ban đầu (lộn xộn): " + scores);
+
+        // BƯỚC 1: Lấy danh sách Entry từ Map đổ vào List
+        List<Map.Entry<String, Integer>> list = new ArrayList<>(scores.entrySet());
+
+        // BƯỚC 2: Sắp xếp List dựa trên Value (Điểm số giảm dần)
+        list.sort(new Comparator<Map.Entry<String, Integer>>() {
+            @Override
+            public int compare(Map.Entry<String, Integer> o1, Map.Entry<String, Integer> o2) {
+                // o2.getValue().compareTo(o1.getValue()) -> Giảm dần
+                return o2.getValue().compareTo(o1.getValue());
+            }
+        });
+
+        // BƯỚC 3: Đổ lại vào LinkedHashMap để giữ thứ tự
+        Map<String, Integer> sortedMap = new LinkedHashMap<>();
+        for (Map.Entry<String, Integer> entry : list) {
+            sortedMap.put(entry.getKey(), entry.getValue());
+        }
+
+        System.out.println("Map sắp xếp theo Value (Điểm giảm dần): " + sortedMap);
+        // Kết quả: {Bob=99, David=90, Alice=85, Charlie=70}
+    }
+}
+```
+
+---
+
+## 7. Interface Comparable và Hàm compareTo
+
+Trong Java, khi dùng `TreeSet` hoặc `TreeMap`, hệ thống cần biết cách **Sắp xếp** các Object của bạn. Làm sao nó biết `Student A` lớn hơn hay nhỏ hơn `Student B`? 
+
+Để giải quyết, Class của bạn **BẮT BUỘC** phải implements interface `Comparable<T>` và ghi đè hàm `compareTo()`. Nếu không, khi add vào TreeSet sẽ bị văng lỗi `ClassCastException`.
+
+### Quy tắc hàm `compareTo(Object o)`
+Hàm này so sánh đối tượng hiện tại (`this`) với đối tượng truyền vào (`o`). Trả về 1 số nguyên `int`:
+- **Số ÂM (`< 0`)**: `this` ĐỨNG TRƯỚC `o` (Tức là `this` nhỏ hơn).
+- **Số KHÔNG (`== 0`)**: Bằng nhau.
+- **Số DƯƠNG (`> 0`)**: `this` ĐỨNG SAU `o` (Tức là `this` lớn hơn).
+
+```java
+import java.util.TreeSet;
+
+// 1. implements Comparable
+class Product implements Comparable<Product> {
+    int price;
+    String name;
+
+    public Product(int price, String name) {
+        this.price = price; this.name = name;
+    }
+
+    // 2. Ghi đè compareTo
+    @Override
+    public int compareTo(Product other) {
+        // Tiêu chí 1: Sắp xếp theo giá TĂNG DẦN
+        if (this.price != other.price) {
+            return Integer.compare(this.price, other.price);
+        }
+        // Tiêu chí 2: Nếu giá bằng nhau, sắp xếp theo tên (A-Z)
+        return this.name.compareTo(other.name);
+    }
+
+    @Override
+    public String toString() { return name + "($" + price + ")"; }
+}
+
+public class ComparableDemo {
+    public static void main(String[] args) {
+        // Sử dụng TreeSet
+        TreeSet<Product> set = new TreeSet<>();
+        set.add(new Product(500, "Laptop"));
+        set.add(new Product(200, "Mouse"));
+        set.add(new Product(200, "Keyboard")); // Cùng giá 200
+
+        System.out.println(set);
+        // Kết quả: [Keyboard($200), Mouse($200), Laptop($500)]
+        // (Keyboard đứng trước Mouse vì vần K đứng trước vần M)
+    }
+}
+```
+> **Lưu ý:** Nếu bạn không thể sửa mã nguồn của Class để `implements Comparable`, bạn có thể tạo một class riêng `implements Comparator<T>` và truyền nó vào Constructor của TreeSet/TreeMap.
+
+---
+
+## 8. Bảng Đánh giá Tốc độ (Độ phức tạp thuật toán Big O)
+
+Đây là bảng tóm tắt lý do tại sao phải chọn đúng Cấu trúc dữ liệu trong các tình huống thực tế:
+
+| Cấu trúc dữ liệu | Hàm `add(E)` (Thêm) | Hàm `remove(E)` (Xóa) | Hàm `contains(E)` (Kiểm tra tồn tại) | Nhận xét |
+|---|---|---|---|---|
+| **ArrayList** | Đầu: $O(N)$<br>Cuối: $O(1)$ | Đầu/Giữa: $O(N)$<br>Cuối: $O(1)$ | $O(N)$ (Phải quét hết mảng) | Nhanh khi thêm cuối và truy xuất bằng `get(index)` O(1). |
+| **LinkedList** | Đầu/Cuối: $O(1)$ | Đầu/Cuối: $O(1)$<br>Giữa: $O(N)$ | $O(N)$ (Phải quét tuần tự) | Tuyệt vời khi dùng làm Queue / Stack. |
+| **HashSet** | $O(1)$ (Tr.bình) | $O(1)$ (Tr.bình) | $O(1)$ (Tr.bình) | Nhanh vô địch trong việc kiểm tra "Phần tử này đã có chưa?". |
+| **TreeSet** | $O(\log N)$ | $O(\log N)$ | $O(\log N)$ | Luôn giữ dữ liệu được sắp xếp, nhưng chậm hơn HashSet. |
+| **HashMap** | `put`: $O(1)$ | `remove`: $O(1)$ | `containsKey`: $O(1)$ | Map phổ biến nhất, hiệu suất cao nhất. |
+| **TreeMap** | `put`: $O(\log N)$| `remove`: $O(\log N)$| `containsKey`: $O(\log N)$| Dùng khi cần các Key luôn được sắp xếp. |
+
+---
+
+> **📌 Kết thúc Phần 7: Collections Framework**
 >
-> Phần tiếp theo: [Phần 7: Collections Framework](#phần-7-collections-framework) *(sẽ được bổ sung)*
+> Phần tiếp theo: [Phần 8: Lập trình Đa luồng (Multi-threading)](#phần-8-lập-trình-đa-luồng) *(sẽ được bổ sung)*
 
