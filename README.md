@@ -5464,5 +5464,1414 @@ HashSet tìm kiếm đối tượng:
 ---
 
 > **📌 Kết thúc Phần 3: Lập Trình Hướng Đối Tượng (OOP)**
+
+---
+
+# Phần 4: Xử Lý Ngoại Lệ (Exception Handling)
+
+## 📌 Mục lục
+
+1. [Ngoại lệ là gì](#1-ngoại-lệ-là-gì)
+2. [Cấu trúc bắt ngoại lệ (try-catch)](#2-cấu-trúc-bắt-ngoại-lệ-try-catch)
+3. [Khối finally](#3-khối-finally)
+4. [Từ khóa throw và throws](#4-từ-khóa-throw-và-throws)
+5. [Tạo ngoại lệ riêng (Custom Exception)](#5-tạo-ngoại-lệ-riêng-custom-exception)
+
+---
+
+## 1. Ngoại lệ là gì
+
+### 1.1 Định nghĩa
+
+**Ngoại lệ (Exception)** là một sự kiện **bất thường** xảy ra trong quá trình chạy chương trình, làm **gián đoạn** luồng thực thi bình thường. Nếu không được xử lý, chương trình sẽ **crash** (dừng đột ngột).
+
+```
+Chương trình bình thường:
+  Lệnh 1 → Lệnh 2 → Lệnh 3 → Lệnh 4 → Kết thúc ✅
+
+Chương trình có ngoại lệ (KHÔNG xử lý):
+  Lệnh 1 → Lệnh 2 → 💥 EXCEPTION → CRASH! ❌
+                     (chia cho 0)    (Lệnh 3, 4 KHÔNG chạy)
+
+Chương trình có ngoại lệ (CÓ xử lý):
+  Lệnh 1 → Lệnh 2 → 💥 EXCEPTION → [catch xử lý] → Lệnh 4 → Kết thúc ✅
+                                      (thông báo lỗi)
+```
+
+### 1.2 Các loại ngoại lệ thường gặp
+
+```java
+public class CommonExceptionsDemo {
+    public static void main(String[] args) {
+        // 1. ArithmeticException - Chia cho 0
+        // int result = 10 / 0; // 💥 ArithmeticException: / by zero
+
+        // 2. NullPointerException - Gọi method trên null
+        // String str = null;
+        // str.length(); // 💥 NullPointerException
+
+        // 3. ArrayIndexOutOfBoundsException - Truy cập index ngoài phạm vi
+        // int[] arr = {1, 2, 3};
+        // int x = arr[5]; // 💥 ArrayIndexOutOfBoundsException
+
+        // 4. NumberFormatException - Parse chuỗi sai định dạng
+        // int num = Integer.parseInt("abc"); // 💥 NumberFormatException
+
+        // 5. ClassCastException - Ép kiểu sai
+        // Object obj = "Hello";
+        // Integer num = (Integer) obj; // 💥 ClassCastException
+
+        // 6. StackOverflowError - Đệ quy không có điều kiện dừng
+        // recursiveForever(); // 💥 StackOverflowError
+
+        // 7. FileNotFoundException - File không tồn tại
+        // FileReader fr = new FileReader("khong_co.txt"); // 💥 FileNotFoundException
+
+        // 8. StringIndexOutOfBoundsException
+        // "Hi".charAt(99); // 💥 StringIndexOutOfBoundsException
+    }
+}
+```
+
+### 1.3 Cây phân cấp Exception trong Java
+
+```
+                        java.lang.Object
+                              │
+                      java.lang.Throwable ← Tổ tiên của mọi lỗi/ngoại lệ
+                         ╱           ╲
+                        ╱             ╲
+               java.lang.Error    java.lang.Exception
+               (Lỗi nghiêm trọng)  (Ngoại lệ xử lý được)
+                     │                      │
+               ┌─────┤              ┌───────┼──────────────┐
+               │     │              │       │              │
+          StackOver  OutOf     IOException  SQL        RuntimeException
+          flowError  MemoryErr             Exception   (Unchecked)
+                                    │                      │
+                              ┌─────┤              ┌───────┼──────────┐
+                              │     │              │       │          │
+                         FileNot  IO          NullPointer Arithmetic ArrayIndex
+                         Found   Exception   Exception   Exception  OutOfBounds
+                         Exception                                  Exception
+```
+
+### 1.4 Checked vs Unchecked Exception
+
+| Tiêu chí | Checked Exception | Unchecked Exception |
+|---|---|---|
+| **Kế thừa từ** | `Exception` (trừ RuntimeException) | `RuntimeException` |
+| **Kiểm tra khi** | **Compile-time** (biên dịch) | **Runtime** (chạy) |
+| **Bắt buộc xử lý?** | ✅ Phải try-catch hoặc throws | ❌ Không bắt buộc |
+| **Ví dụ** | `IOException`, `SQLException`, `FileNotFoundException` | `NullPointerException`, `ArithmeticException`, `ArrayIndexOutOfBoundsException` |
+| **Nguyên nhân** | Lỗi bên ngoài (file, mạng, DB) | Lỗi lập trình (bug trong code) |
+| **Phòng tránh** | Không thể phòng tránh hoàn toàn | Có thể phòng tránh bằng code tốt |
+
+```java
+import java.io.*;
+
+public class CheckedVsUncheckedDemo {
+    // ===== CHECKED EXCEPTION - Compiler BẮT BUỘC xử lý =====
+    public static void readFile() {
+        // FileReader ném FileNotFoundException (checked)
+        // → Compiler yêu cầu PHẢI try-catch hoặc throws
+
+        // ❌ Không xử lý → LỖI BIÊN DỊCH!
+        // FileReader fr = new FileReader("test.txt");
+
+        // ✅ Cách 1: try-catch
+        try {
+            FileReader fr = new FileReader("test.txt");
+            System.out.println("Đọc file thành công");
+        } catch (FileNotFoundException e) {
+            System.out.println("File không tồn tại: " + e.getMessage());
+        }
+    }
+
+    // ✅ Cách 2: throws (đẩy trách nhiệm cho hàm gọi)
+    public static void readFile2() throws FileNotFoundException {
+        FileReader fr = new FileReader("test.txt");
+    }
+
+    // ===== UNCHECKED EXCEPTION - Compiler KHÔNG bắt buộc =====
+    public static void divide(int a, int b) {
+        // ArithmeticException (unchecked) - không bắt buộc try-catch
+        // Nhưng NÊN kiểm tra để tránh lỗi
+        if (b == 0) {
+            System.out.println("❌ Không thể chia cho 0");
+            return;
+        }
+        System.out.println(a + " / " + b + " = " + (a / b));
+    }
+
+    public static void main(String[] args) {
+        readFile();
+        divide(10, 0);
+        divide(10, 3);
+    }
+}
+```
+
+---
+
+## 2. Cấu trúc bắt ngoại lệ (try-catch)
+
+### 2.1 Cú pháp cơ bản
+
+```java
+public class TryCatchDemo {
+    public static void main(String[] args) {
+        // ===== 1. TRY-CATCH CƠ BẢN =====
+        System.out.println("===== 1. try-catch cơ bản =====");
+        try {
+            // Khối TRY: chứa code có thể gây ngoại lệ
+            int result = 10 / 0;  // 💥 ArithmeticException
+            System.out.println("Kết quả: " + result);  // ← KHÔNG chạy đến đây
+        } catch (ArithmeticException e) {
+            // Khối CATCH: xử lý ngoại lệ
+            System.out.println("❌ Lỗi chia cho 0: " + e.getMessage());
+            // getMessage() → "/ by zero"
+        }
+        System.out.println("Chương trình vẫn tiếp tục...\n");  // ← VẪN chạy!
+
+        // ===== 2. NHIỀU KHỐI CATCH (bắt nhiều loại ngoại lệ) =====
+        System.out.println("===== 2. Nhiều catch =====");
+        try {
+            String str = null;
+            // int num = Integer.parseInt("abc");  // NumberFormatException
+            System.out.println(str.length());      // NullPointerException
+        } catch (NumberFormatException e) {
+            System.out.println("❌ Lỗi parse số: " + e.getMessage());
+        } catch (NullPointerException e) {
+            System.out.println("❌ Lỗi null: " + e.getMessage());
+        } catch (Exception e) {
+            // Catch chung - bắt TẤT CẢ ngoại lệ còn lại
+            // ⚠️ PHẢI đặt CUỐI CÙNG (từ cụ thể → chung)
+            System.out.println("❌ Lỗi khác: " + e.getMessage());
+        }
+
+        // ===== 3. MULTI-CATCH (Java 7+) - Gộp nhiều exception =====
+        System.out.println("\n===== 3. Multi-catch =====");
+        try {
+            int[] arr = {1, 2, 3};
+            arr[10] = 99;  // ArrayIndexOutOfBoundsException
+        } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
+            // Bắt 2 loại exception bằng 1 catch
+            System.out.println("❌ Lỗi mảng hoặc null: " + e.getMessage());
+        }
+
+        // ===== 4. THÔNG TIN CHI TIẾT VỀ EXCEPTION =====
+        System.out.println("\n===== 4. Thông tin exception =====");
+        try {
+            int[] arr = {1, 2, 3};
+            System.out.println(arr[5]);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            System.out.println("getMessage():  " + e.getMessage());
+            // → "Index 5 out of bounds for length 3"
+
+            System.out.println("getClass():    " + e.getClass().getName());
+            // → "java.lang.ArrayIndexOutOfBoundsException"
+
+            System.out.println("toString():    " + e.toString());
+            // → "java.lang.ArrayIndexOutOfBoundsException: Index 5 out of..."
+
+            System.out.println("\nStack trace:");
+            e.printStackTrace();
+            // → In ra stack trace đầy đủ (file, dòng, method)
+        }
+
+        // ===== 5. TRY LỒNG NHAU =====
+        System.out.println("\n===== 5. Try lồng nhau =====");
+        try {
+            System.out.println("Try ngoài - bắt đầu");
+            try {
+                int x = 10 / 0;
+            } catch (ArithmeticException e) {
+                System.out.println("  Catch trong: " + e.getMessage());
+            }
+            System.out.println("Try ngoài - tiếp tục");
+
+            String s = null;
+            s.length(); // NullPointerException
+
+        } catch (NullPointerException e) {
+            System.out.println("Catch ngoài: " + e.getMessage());
+        }
+    }
+}
+```
+
+### 2.2 Luồng thực thi try-catch
+
+```
+Trường hợp 1: KHÔNG có ngoại lệ
+┌───────────────────────┐
+│ try {                 │
+│   Lệnh 1 ✅ (chạy)   │
+│   Lệnh 2 ✅ (chạy)   │
+│   Lệnh 3 ✅ (chạy)   │
+│ }                     │
+│ catch (Exception e) { │
+│   Xử lý lỗi ⏭ (BỎ QUA)│
+│ }                     │
+│ Code sau try-catch ✅  │
+└───────────────────────┘
+
+Trường hợp 2: CÓ ngoại lệ tại Lệnh 2
+┌───────────────────────┐
+│ try {                 │
+│   Lệnh 1 ✅ (chạy)   │
+│   Lệnh 2 💥 (LỖI!)  │
+│   Lệnh 3 ⏭ (BỎ QUA)  │ ← Không chạy
+│ }                     │
+│ catch (Exception e) { │
+│   Xử lý lỗi ✅ (CHẠY) │ ← Nhảy vào catch
+│ }                     │
+│ Code sau try-catch ✅  │ ← Vẫn chạy tiếp
+└───────────────────────┘
+```
+
+---
+
+## 3. Khối finally
+
+### 3.1 finally là gì?
+
+Khối `finally` **LUÔN LUÔN chạy**, bất kể có ngoại lệ hay không. Thường dùng để **giải phóng tài nguyên** (đóng file, đóng kết nối DB, đóng socket...).
+
+```
+try {
+   // Code có thể gây lỗi
+} catch (Exception e) {
+   // Xử lý lỗi
+} finally {
+   // LUÔN CHẠY dù có lỗi hay không
+   // → Dùng để dọn dẹp tài nguyên
+}
+```
+
+### 3.2 Code ví dụ
+
+```java
+import java.io.*;
+
+public class FinallyDemo {
+    public static void main(String[] args) {
+        // ===== 1. FINALLY LUÔN CHẠY =====
+        System.out.println("===== 1. Finally luôn chạy =====");
+
+        // Trường hợp A: KHÔNG có exception
+        try {
+            System.out.println("Try: 10 / 2 = " + (10 / 2));
+        } catch (ArithmeticException e) {
+            System.out.println("Catch: " + e.getMessage());
+        } finally {
+            System.out.println("Finally: LUÔN chạy! ✅");
+        }
+
+        System.out.println();
+
+        // Trường hợp B: CÓ exception
+        try {
+            System.out.println("Try: 10 / 0 = " + (10 / 0)); // 💥
+        } catch (ArithmeticException e) {
+            System.out.println("Catch: " + e.getMessage());
+        } finally {
+            System.out.println("Finally: VẪN chạy dù có lỗi! ✅");
+        }
+
+        // ===== 2. FINALLY VỚI RETURN =====
+        System.out.println("\n===== 2. Finally với return =====");
+        System.out.println("Kết quả: " + testReturn());
+        // Finally vẫn chạy TRƯỚC khi return!
+
+        // ===== 3. ỨNG DỤNG THỰC TẾ: Đóng tài nguyên =====
+        System.out.println("\n===== 3. Đóng tài nguyên =====");
+
+        // Cách truyền thống (trước Java 7):
+        FileReader reader = null;
+        try {
+            reader = new FileReader("test.txt");
+            // Đọc file...
+            System.out.println("Đọc file thành công");
+        } catch (FileNotFoundException e) {
+            System.out.println("❌ File không tồn tại");
+        } finally {
+            // LUÔN đóng file, dù thành công hay thất bại
+            if (reader != null) {
+                try {
+                    reader.close();
+                    System.out.println("Đã đóng file (finally)");
+                } catch (IOException e) {
+                    System.out.println("Lỗi khi đóng file");
+                }
+            }
+        }
+
+        // ===== 4. TRY-WITH-RESOURCES (Java 7+) - Thay thế finally =====
+        System.out.println("\n===== 4. Try-with-resources =====");
+        // Tự động đóng tài nguyên khi kết thúc khối try
+        // Resource phải implement AutoCloseable
+
+        try (BufferedReader br = new BufferedReader(new FileReader("test.txt"))) {
+            String line = br.readLine();
+            System.out.println("Đọc: " + line);
+        } catch (FileNotFoundException e) {
+            System.out.println("❌ File không tồn tại");
+        } catch (IOException e) {
+            System.out.println("❌ Lỗi đọc file");
+        }
+        // br tự động được close() khi ra khỏi try!
+        // Không cần finally để đóng nữa!
+
+        // ===== 5. TRY-WITH-RESOURCES nhiều resource =====
+        // try (
+        //     FileInputStream fis = new FileInputStream("input.txt");
+        //     FileOutputStream fos = new FileOutputStream("output.txt");
+        //     BufferedReader br = new BufferedReader(new InputStreamReader(fis))
+        // ) {
+        //     // Sử dụng 3 resource
+        //     // Tất cả tự động close() theo thứ tự NGƯỢC (fos → fis → br... thực tế LIFO)
+        // } catch (IOException e) {
+        //     e.printStackTrace();
+        // }
+    }
+
+    // Finally vẫn chạy trước return
+    public static int testReturn() {
+        try {
+            System.out.println("  Try block");
+            return 1;
+        } catch (Exception e) {
+            System.out.println("  Catch block");
+            return 2;
+        } finally {
+            System.out.println("  Finally block (chạy TRƯỚC return!)");
+            // ⚠️ KHÔNG nên return trong finally (sẽ ghi đè return của try/catch)
+        }
+    }
+}
+```
+
+### 3.3 Bảng tóm tắt hành vi finally
+
+| Tình huống | try | catch | finally |
+|---|---|---|---|
+| **Không có exception** | ✅ Chạy hết | ⏭ Bỏ qua | ✅ **Luôn chạy** |
+| **Có exception, được bắt** | ✅ Chạy đến chỗ lỗi | ✅ Chạy | ✅ **Luôn chạy** |
+| **Có exception, KHÔNG bắt được** | ✅ Chạy đến chỗ lỗi | ⏭ Không khớp | ✅ **Luôn chạy** (rồi crash) |
+| **Có return trong try** | ✅ return | ⏭ | ✅ **Chạy trước return** |
+| **Có System.exit(0)** | ✅ | - | ❌ KHÔNG chạy (duy nhất trường hợp này) |
+
+### 3.4 So sánh try-finally vs try-with-resources
+
+```java
+// ❌ CŨ: Dài dòng, dễ quên đóng, xử lý exception lồng nhau
+FileReader reader = null;
+try {
+    reader = new FileReader("file.txt");
+    // đọc file...
+} catch (IOException e) {
+    e.printStackTrace();
+} finally {
+    if (reader != null) {
+        try {
+            reader.close();  // Lại phải try-catch nữa!
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+// ✅ MỚI (Java 7+): Gọn gàng, tự động đóng
+try (FileReader reader2 = new FileReader("file.txt")) {
+    // đọc file...
+} catch (IOException e) {
+    e.printStackTrace();
+}
+// reader2 tự động close()!
+```
+
+---
+
+## 4. Từ khóa throw và throws
+
+### 4.1 Phân biệt throw và throws
+
+| Tiêu chí | `throw` | `throws` |
+|---|---|---|
+| **Vị trí** | **Trong thân hàm** | **Tại khai báo hàm** |
+| **Mục đích** | **Ném** (tạo ra) một ngoại lệ cụ thể | **Khai báo** hàm có thể ném ngoại lệ |
+| **Số lượng** | Ném **1** exception tại 1 thời điểm | Khai báo **nhiều** exception |
+| **Theo sau là** | **Đối tượng** exception (`new Exception()`) | **Tên class** exception |
+| **Cú pháp** | `throw new ArithmeticException("Lỗi");` | `void method() throws IOException, SQLException` |
+
+### 4.2 Code ví dụ chi tiết
+
+```java
+import java.io.*;
+
+public class ThrowThrowsDemo {
+
+    // ===== THROW: Ném ngoại lệ trong thân hàm =====
+
+    // 1. throw unchecked exception
+    public static int divide(int a, int b) {
+        if (b == 0) {
+            // TẠO và NÉM ngoại lệ
+            throw new ArithmeticException("Không thể chia cho 0! (a=" + a + ", b=" + b + ")");
+        }
+        return a / b;
+    }
+
+    // 2. throw để validate dữ liệu
+    public static void setAge(int age) {
+        if (age < 0) {
+            throw new IllegalArgumentException("Tuổi không thể âm: " + age);
+        }
+        if (age > 150) {
+            throw new IllegalArgumentException("Tuổi không hợp lệ: " + age);
+        }
+        System.out.println("✅ Tuổi hợp lệ: " + age);
+    }
+
+    // 3. throw null check
+    public static String processName(String name) {
+        if (name == null) {
+            throw new NullPointerException("Tên không được null!");
+        }
+        if (name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Tên không được rỗng!");
+        }
+        return name.trim().toUpperCase();
+    }
+
+    // ===== THROWS: Khai báo hàm có thể ném ngoại lệ =====
+
+    // 4. throws checked exception (BẮT BUỘC khai báo)
+    public static String readFirstLine(String filePath) throws FileNotFoundException, IOException {
+        // FileReader ném FileNotFoundException (checked)
+        // BufferedReader.readLine() ném IOException (checked)
+        // → PHẢI khai báo throws ở method signature
+
+        BufferedReader br = new BufferedReader(new FileReader(filePath));
+        String line = br.readLine();
+        br.close();
+        return line;
+    }
+
+    // 5. throws kết hợp throw
+    public static double sqrt(double number) throws IllegalArgumentException {
+        if (number < 0) {
+            throw new IllegalArgumentException(
+                "Không thể tính căn bậc 2 của số âm: " + number);
+        }
+        return Math.sqrt(number);
+    }
+
+    // ===== MAIN: Xử lý các exception =====
+    public static void main(String[] args) {
+        // --- Test throw ---
+        System.out.println("===== THROW =====");
+
+        try {
+            int result = divide(10, 0);
+        } catch (ArithmeticException e) {
+            System.out.println("❌ " + e.getMessage());
+        }
+
+        try {
+            setAge(-5);
+        } catch (IllegalArgumentException e) {
+            System.out.println("❌ " + e.getMessage());
+        }
+
+        setAge(25);  // ✅ Tuổi hợp lệ: 25
+
+        try {
+            processName(null);
+        } catch (NullPointerException e) {
+            System.out.println("❌ " + e.getMessage());
+        }
+
+        System.out.println("Name: " + processName("  dũng  ")); // DŨNG
+
+        // --- Test throws ---
+        System.out.println("\n===== THROWS =====");
+
+        // Hàm khai báo throws → người gọi PHẢI xử lý
+        try {
+            String line = readFirstLine("test.txt");
+            System.out.println("Dòng đầu: " + line);
+        } catch (FileNotFoundException e) {
+            System.out.println("❌ File không tồn tại: " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("❌ Lỗi IO: " + e.getMessage());
+        }
+
+        try {
+            System.out.println("√16 = " + sqrt(16));   // 4.0
+            System.out.println("√-4 = " + sqrt(-4));    // 💥
+        } catch (IllegalArgumentException e) {
+            System.out.println("❌ " + e.getMessage());
+        }
+    }
+}
+```
+
+### 4.3 Chuỗi ném ngoại lệ (Exception Propagation)
+
+```
+Khi exception không được bắt, nó TỰ TRUYỀN NGƯỢC lên caller:
+
+main() ──gọi──► methodA() ──gọi──► methodB() ──gọi──► methodC()
+                                                          │
+                                                    💥 Exception!
+                                                          │
+                              methodC() không catch   ◄───┘
+                              → truyền lên methodB()
+                    methodB() không catch   ◄──────────
+                    → truyền lên methodA()
+          methodA() có catch → XỬ LÝ!  ◄──────────
+```
+
+```java
+public class PropagationDemo {
+    public static void main(String[] args) {
+        try {
+            methodA();
+        } catch (Exception e) {
+            System.out.println("main() bắt được: " + e.getMessage());
+            System.out.println("\nStack trace:");
+            e.printStackTrace();
+        }
+    }
+
+    static void methodA() {
+        System.out.println("→ methodA() gọi methodB()");
+        methodB();  // Không catch → exception truyền lên main()
+    }
+
+    static void methodB() {
+        System.out.println("→ methodB() gọi methodC()");
+        methodC();  // Không catch → exception truyền lên methodA()
+    }
+
+    static void methodC() {
+        System.out.println("→ methodC() ném exception!");
+        throw new RuntimeException("Lỗi tại methodC!");
+        // Exception truyền ngược: methodC → methodB → methodA → main
+    }
+}
+```
+
+**Output:**
+```
+→ methodA() gọi methodB()
+→ methodB() gọi methodC()
+→ methodC() ném exception!
+main() bắt được: Lỗi tại methodC!
+
+Stack trace:
+java.lang.RuntimeException: Lỗi tại methodC!
+    at PropagationDemo.methodC(PropagationDemo.java:21)
+    at PropagationDemo.methodB(PropagationDemo.java:16)
+    at PropagationDemo.methodA(PropagationDemo.java:11)
+    at PropagationDemo.main(PropagationDemo.java:4)
+```
+
+### 4.4 Re-throw (Ném lại ngoại lệ)
+
+```java
+public class ReThrowDemo {
+    public static void processData(String data) {
+        try {
+            int num = Integer.parseInt(data);
+            System.out.println("Số: " + num);
+        } catch (NumberFormatException e) {
+            System.out.println("⚠️ Log lỗi: Dữ liệu sai định dạng - " + data);
+            // Xử lý một phần (log), rồi NÉM LẠI cho caller xử lý tiếp
+            throw e;  // Re-throw nguyên exception
+        }
+    }
+
+    // Hoặc bọc vào exception khác (Exception chaining)
+    public static void processData2(String data) throws Exception {
+        try {
+            int num = Integer.parseInt(data);
+        } catch (NumberFormatException e) {
+            // Bọc exception gốc vào exception mới (giữ nguyên cause)
+            throw new Exception("Lỗi xử lý dữ liệu: " + data, e);
+            // e là "cause" - có thể lấy bằng getCause()
+        }
+    }
+
+    public static void main(String[] args) {
+        try {
+            processData("abc");
+        } catch (NumberFormatException e) {
+            System.out.println("main() bắt re-throw: " + e.getMessage());
+        }
+
+        System.out.println();
+
+        try {
+            processData2("xyz");
+        } catch (Exception e) {
+            System.out.println("Exception: " + e.getMessage());
+            System.out.println("Cause: " + e.getCause().getMessage());
+        }
+    }
+}
+```
+
+---
+
+## 5. Tạo ngoại lệ riêng (Custom Exception)
+
+### 5.1 Tại sao cần Custom Exception?
+
+- Tên exception **mô tả rõ lỗi nghiệp vụ** (VD: `InsufficientBalanceException`)
+- Có thể **thêm thuộc tính riêng** (VD: `errorCode`, `currentBalance`)
+- Code **dễ đọc, dễ debug** hơn
+
+### 5.2 Code ví dụ đầy đủ
+
+```java
+// ===== CUSTOM CHECKED EXCEPTION =====
+class InsufficientBalanceException extends Exception {
+    private double currentBalance;
+    private double withdrawAmount;
+
+    public InsufficientBalanceException(double currentBalance, double withdrawAmount) {
+        // Gọi constructor của Exception với message
+        super(String.format(
+            "Số dư không đủ! Số dư: $%.2f, Yêu cầu rút: $%.2f, Thiếu: $%.2f",
+            currentBalance, withdrawAmount, withdrawAmount - currentBalance
+        ));
+        this.currentBalance = currentBalance;
+        this.withdrawAmount = withdrawAmount;
+    }
+
+    public double getCurrentBalance() { return currentBalance; }
+    public double getWithdrawAmount() { return withdrawAmount; }
+    public double getDeficit() { return withdrawAmount - currentBalance; }
+}
+
+// ===== CUSTOM UNCHECKED EXCEPTION =====
+class InvalidAccountException extends RuntimeException {
+    private String accountNumber;
+    private String errorCode;
+
+    public InvalidAccountException(String accountNumber, String errorCode, String message) {
+        super(message);
+        this.accountNumber = accountNumber;
+        this.errorCode = errorCode;
+    }
+
+    public String getAccountNumber() { return accountNumber; }
+    public String getErrorCode() { return errorCode; }
+}
+
+// ===== CUSTOM EXCEPTION VỚI ENUM ERROR CODE =====
+class BankException extends Exception {
+    public enum ErrorCode {
+        INVALID_AMOUNT("E001", "Số tiền không hợp lệ"),
+        ACCOUNT_LOCKED("E002", "Tài khoản bị khóa"),
+        DAILY_LIMIT("E003", "Vượt quá hạn mức giao dịch trong ngày"),
+        INSUFFICIENT_BALANCE("E004", "Số dư không đủ");
+
+        private final String code;
+        private final String description;
+
+        ErrorCode(String code, String description) {
+            this.code = code;
+            this.description = description;
+        }
+
+        public String getCode() { return code; }
+        public String getDescription() { return description; }
+    }
+
+    private final ErrorCode errorCode;
+
+    public BankException(ErrorCode errorCode) {
+        super(errorCode.getDescription());
+        this.errorCode = errorCode;
+    }
+
+    public BankException(ErrorCode errorCode, String additionalInfo) {
+        super(errorCode.getDescription() + " - " + additionalInfo);
+        this.errorCode = errorCode;
+    }
+
+    public ErrorCode getErrorCode() { return errorCode; }
+}
+
+// ===== SỬ DỤNG CUSTOM EXCEPTION =====
+class BankAccount2 {
+    private String accountNumber;
+    private double balance;
+    private boolean isLocked;
+    private double dailyWithdrawn;
+    private static final double DAILY_LIMIT = 50_000_000;
+
+    public BankAccount2(String accountNumber, double balance) {
+        if (accountNumber == null || accountNumber.length() != 10) {
+            throw new InvalidAccountException(accountNumber, "ACC_INVALID",
+                "Số tài khoản phải có 10 ký tự!");
+        }
+        this.accountNumber = accountNumber;
+        this.balance = balance;
+        this.isLocked = false;
+        this.dailyWithdrawn = 0;
+    }
+
+    public void withdraw(double amount) throws BankException, InsufficientBalanceException {
+        // Kiểm tra 1: Tài khoản bị khóa
+        if (isLocked) {
+            throw new BankException(BankException.ErrorCode.ACCOUNT_LOCKED);
+        }
+
+        // Kiểm tra 2: Số tiền hợp lệ
+        if (amount <= 0) {
+            throw new BankException(BankException.ErrorCode.INVALID_AMOUNT,
+                "Số tiền phải lớn hơn 0, nhận được: " + amount);
+        }
+
+        // Kiểm tra 3: Hạn mức trong ngày
+        if (dailyWithdrawn + amount > DAILY_LIMIT) {
+            throw new BankException(BankException.ErrorCode.DAILY_LIMIT,
+                String.format("Đã rút: $%,.0f, Yêu cầu: $%,.0f, Hạn mức: $%,.0f",
+                    dailyWithdrawn, amount, DAILY_LIMIT));
+        }
+
+        // Kiểm tra 4: Số dư
+        if (amount > balance) {
+            throw new InsufficientBalanceException(balance, amount);
+        }
+
+        // Thực hiện rút
+        balance -= amount;
+        dailyWithdrawn += amount;
+        System.out.printf("✅ Rút $%,.0f thành công. Số dư: $%,.0f%n", amount, balance);
+    }
+
+    public double getBalance() { return balance; }
+    public void lock() { this.isLocked = true; }
+}
+
+// ===== MAIN =====
+public class CustomExceptionDemo {
+    public static void main(String[] args) {
+        System.out.println("===== Custom Exception Demo =====\n");
+
+        // 1. Tạo tài khoản - InvalidAccountException (unchecked)
+        try {
+            BankAccount2 bad = new BankAccount2("123", 1000);
+        } catch (InvalidAccountException e) {
+            System.out.println("❌ [" + e.getErrorCode() + "] " + e.getMessage());
+            System.out.println("   Tài khoản: " + e.getAccountNumber());
+        }
+
+        System.out.println();
+
+        // 2. Tạo tài khoản hợp lệ
+        BankAccount2 account = new BankAccount2("1234567890", 10_000_000);
+        System.out.println("Tài khoản tạo thành công! Số dư: $" +
+            String.format("%,.0f", account.getBalance()));
+
+        // 3. Test các trường hợp lỗi
+        System.out.println("\n--- Test rút tiền ---");
+
+        // Rút thành công
+        try {
+            account.withdraw(2_000_000);
+        } catch (BankException | InsufficientBalanceException e) {
+            System.out.println("❌ " + e.getMessage());
+        }
+
+        // Rút số tiền âm
+        try {
+            account.withdraw(-100);
+        } catch (BankException e) {
+            System.out.println("❌ [" + e.getErrorCode().getCode() + "] " + e.getMessage());
+        } catch (InsufficientBalanceException e) {
+            System.out.println("❌ " + e.getMessage());
+        }
+
+        // Rút vượt số dư
+        try {
+            account.withdraw(100_000_000);
+        } catch (BankException e) {
+            System.out.println("❌ [" + e.getErrorCode().getCode() + "] " + e.getMessage());
+        } catch (InsufficientBalanceException e) {
+            System.out.println("❌ " + e.getMessage());
+            System.out.printf("   Thiếu: $%,.0f%n", e.getDeficit());
+        }
+
+        // Khóa tài khoản rồi rút
+        account.lock();
+        try {
+            account.withdraw(1_000);
+        } catch (BankException e) {
+            System.out.println("❌ [" + e.getErrorCode().getCode() + "] " + e.getMessage());
+        } catch (InsufficientBalanceException e) {
+            System.out.println("❌ " + e.getMessage());
+        }
+    }
+}
+```
+
+**Output:**
+```
+===== Custom Exception Demo =====
+
+❌ [ACC_INVALID] Số tài khoản phải có 10 ký tự!
+   Tài khoản: 123
+
+Tài khoản tạo thành công! Số dư: $10,000,000
+
+--- Test rút tiền ---
+✅ Rút $2,000,000 thành công. Số dư: $8,000,000
+❌ [E001] Số tiền không hợp lệ - Số tiền phải lớn hơn 0, nhận được: -100.0
+❌ Số dư không đủ! Số dư: $8,000,000.00, Yêu cầu rút: $100,000,000.00, Thiếu: $92,000,000.00
+   Thiếu: $92,000,000
+❌ [E002] Tài khoản bị khóa
+```
+
+### 5.3 Cách tạo Custom Exception
+
+```
+Muốn tạo:                        Extend từ:
+─────────────────────────         ──────────────────
+Checked Exception (bắt buộc xử lý)  → extends Exception
+Unchecked Exception (không bắt buộc) → extends RuntimeException
+
+Quy tắc đặt tên: Kết thúc bằng "Exception"
+✅ InsufficientBalanceException
+✅ InvalidAccountException
+✅ UserNotFoundException
+❌ BalanceError (sai quy ước)
+```
+
+### 5.4 Best Practices xử lý ngoại lệ
+
+| Quy tắc | Đúng ✅ | Sai ❌ |
+|---|---|---|
+| **Bắt exception cụ thể** | `catch (FileNotFoundException e)` | `catch (Exception e)` (quá chung) |
+| **Không bỏ trống catch** | `catch (E e) { log(e); }` | `catch (E e) { }` (nuốt lỗi) |
+| **Dùng finally/try-with-resources** | Luôn đóng tài nguyên | Quên đóng file/connection |
+| **Message có ý nghĩa** | `"User ID 123 not found"` | `"Lỗi"` |
+| **Log trước khi throw** | Ghi log → throw | Throw mà không log |
+| **Không dùng exception cho logic** | `if (x != null)` | `try { x.method() } catch (NPE)` |
+| **Custom exception cho nghiệp vụ** | `InsufficientBalanceException` | `RuntimeException("Thiếu tiền")` |
+
+### 5.5 Tổng hợp so sánh
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                   TỔNG HỢP EXCEPTION                         │
+│                                                              │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │ try {                                                  │  │
+│  │    // Code có thể gây exception                        │  │
+│  │    riskyMethod();        // có thể throw               │  │
+│  │ } catch (SpecificException e) {                        │  │
+│  │    // Xử lý exception cụ thể                          │  │
+│  │    log(e);                                             │  │
+│  │ } catch (Exception e) {                                │  │
+│  │    // Xử lý exception chung (đặt cuối)                │  │
+│  │    throw new CustomException("msg", e);  // re-throw   │  │
+│  │ } finally {                                            │  │
+│  │    // LUÔN chạy - dọn dẹp tài nguyên                  │  │
+│  │    cleanup();                                          │  │
+│  │ }                                                      │  │
+│  └────────────────────────────────────────────────────────┘  │
+│                                                              │
+│  // Hoặc:                                                    │
+│  try (Resource r = new Resource()) {  // Tự đóng resource    │
+│      r.use();                                                │
+│  } catch (Exception e) {                                     │
+│      handle(e);                                              │
+│  }                                                           │
+│                                                              │
+│  // Khai báo hàm:                                            │
+│  void myMethod() throws IOException, CustomException {       │
+│      if (error) throw new CustomException("msg");            │
+│  }                                                           │
+│                                                              │
+│  throw  = NÉM exception (trong thân hàm)                    │
+│  throws = KHAI BÁO hàm có thể ném exception (tại signature) │
+└──────────────────────────────────────────────────────────────┘
+```
+
+---
+
+> **📌 Kết thúc Phần 4: Xử Lý Ngoại Lệ**
+
+---
+
+# Phần 5: Đọc Ghi (File I/O & Mạng)
+
+## 📌 Mục lục
+1. [Tổng quan về I/O Stream trong Java](#1-tổng-quan-về-io-stream-trong-java)
+2. [Các cách đọc ghi File Text (Văn bản)](#2-các-cách-đọc-ghi-file-text-văn-bản)
+3. [Các cách đọc ghi File Binary (Nhị phân)](#3-các-cách-đọc-ghi-file-binary-nhị-phân)
+4. [Lưu và đọc List Sinh viên với File Text](#4-lưu-và-đọc-list-sinh-viên-với-file-text)
+5. [Lưu và đọc List Sinh viên với File Binary (Serialization)](#5-lưu-và-đọc-list-sinh-viên-với-file-binary-serialization)
+6. [Đọc dữ liệu từ một HTTP URL (GET Method)](#6-đọc-dữ-liệu-từ-một-http-url-get-method)
+
+---
+
+## 1. Tổng quan về I/O Stream trong Java
+
+Trong Java, dòng dữ liệu (Stream) được chia làm 2 loại chính:
+
+| Tiêu chí | Byte Stream (Dòng byte) | Character Stream (Dòng ký tự) |
+|---|---|---|
+| **Đơn vị xử lý** | 1 byte (8 bits) | 1 ký tự (16 bits - Unicode) |
+| **Class gốc** | `InputStream` / `OutputStream` | `Reader` / `Writer` |
+| **Loại file** | File nhị phân (Ảnh, Video, PDF, file `.bin`) | File văn bản (Text, CSV, JSON, `.txt`) |
+| **Ví dụ Class** | `FileInputStream`, `FileOutputStream` | `FileReader`, `FileWriter`, `BufferedReader` |
+
+> 💡 **Quy tắc vàng**:
+> - Đọc/ghi chữ, văn bản con người đọc được → Dùng **Character Stream** (hậu tố là `Reader/Writer`).
+> - Đọc/ghi dữ liệu thô, hình ảnh, âm thanh, object được mã hóa → Dùng **Byte Stream** (hậu tố là `InputStream/OutputStream`).
+
+---
+
+## 2. Các cách đọc ghi File Text (Văn bản)
+
+### 2.1 Các class phổ biến
+- **`FileWriter` / `FileReader`**: Cách cơ bản nhất, đọc/ghi từng ký tự. (Chậm nếu file lớn)
+- **`BufferedWriter` / `BufferedReader`**: Bọc FileReader/FileWriter, dùng bộ đệm (buffer) để tăng tốc độ. Rất phổ biến vì có hàm `readLine()`.
+- **`PrintWriter`**: Tiện lợi khi ghi file vì hỗ trợ các hàm in giống như in ra màn hình (`print`, `println`, `printf`).
+- **`Scanner`**: Rất dễ để đọc theo từng token, parse số (`nextInt()`, `nextDouble()`).
+- **`java.nio.file.Files`** (Java 7+): Class tiện ích, thao tác cực kỳ nhanh gọn cho các file nhỏ/vừa.
+
+### 2.2 Code ví dụ: Đọc ghi File Text
+
+```java
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Scanner;
+
+public class TextFileDemo {
+    public static void main(String[] args) {
+        String fileName = "data.txt";
+
+        // ==========================================
+        // 1. GHI FILE TEXT
+        // ==========================================
+        System.out.println("--- GHI FILE TEXT ---");
+        
+        // Cách 1: Dùng BufferedWriter (Nhanh, khuyên dùng)
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {
+            bw.write("Dòng 1: Hello World");
+            bw.newLine(); // Xuống dòng
+            bw.write("Dòng 2: Java I/O");
+            System.out.println("Ghi bằng BufferedWriter thành công.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Cách 2: Dùng PrintWriter (Tiện lợi, có println, printf)
+        // true: enable auto-flush
+        try (PrintWriter pw = new PrintWriter(new FileWriter(fileName, true))) { 
+            pw.println("Dòng 3: Ghi nối tiếp (Append)");
+            pw.printf("Dòng 4: Số Pi là %.2f\n", 3.14);
+            System.out.println("Ghi bằng PrintWriter thành công.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // ==========================================
+        // 2. ĐỌC FILE TEXT
+        // ==========================================
+        System.out.println("\n--- ĐỌC FILE TEXT ---");
+
+        // Cách 1: Dùng BufferedReader (Tốt nhất cho đọc từng dòng)
+        System.out.println(">> Đọc bằng BufferedReader:");
+        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                System.out.println(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Cách 2: Dùng Scanner (Tốt cho việc parse dữ liệu)
+        System.out.println("\n>> Đọc bằng Scanner:");
+        try (Scanner scanner = new Scanner(new File(fileName))) {
+            while (scanner.hasNextLine()) {
+                System.out.println(scanner.nextLine());
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        // Cách 3: Dùng java.nio.file.Files (Nhanh gọn, Java 7+)
+        // CHÚ Ý: Chỉ dùng cho file không quá lớn (vừa đủ vào RAM)
+        System.out.println("\n>> Đọc bằng java.nio.file.Files:");
+        try {
+            List<String> lines = Files.readAllLines(Paths.get(fileName));
+            for (String l : lines) {
+                System.out.println(l);
+            }
+            
+            // Nếu muốn lấy cả file dạng 1 String duy nhất (Java 11+):
+            // String content = Files.readString(Paths.get(fileName));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+---
+
+## 3. Các cách đọc ghi File Binary (Nhị phân)
+
+### 3.1 Các class phổ biến
+- **`FileOutputStream` / `FileInputStream`**: Cơ bản nhất, đọc/ghi từng byte hoặc mảng byte.
+- **`BufferedOutputStream` / `BufferedInputStream`**: Có buffer, tăng tốc độ đọc/ghi.
+- **`DataOutputStream` / `DataInputStream`**: Tiện lợi khi muốn đọc/ghi các kiểu dữ liệu nguyên thủy (`int`, `double`, `boolean`...) trực tiếp vào file nhị phân.
+- **`ObjectOutputStream` / `ObjectInputStream`**: Dùng để đọc/ghi trực tiếp ĐỐI TƯỢNG (Object) vào file (gọi là Serialization - Tuần tự hóa).
+
+### 3.2 Code ví dụ: Đọc ghi File Binary
+
+```java
+import java.io.*;
+
+public class BinaryFileDemo {
+    public static void main(String[] args) {
+        String fileName = "data.bin";
+
+        // ==========================================
+        // 1. GHI FILE BINARY (Dùng DataOutputStream)
+        // ==========================================
+        try (DataOutputStream dos = new DataOutputStream(
+                new BufferedOutputStream(new FileOutputStream(fileName)))) {
+            
+            dos.writeInt(12345);          // Ghi số nguyên (4 bytes)
+            dos.writeDouble(3.14159);     // Ghi số thực (8 bytes)
+            dos.writeBoolean(true);       // Ghi boolean (1 byte)
+            dos.writeUTF("Chuỗi UTF-8");  // Ghi chuỗi (tự kèm độ dài)
+            
+            System.out.println("Ghi file nhị phân thành công.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // ==========================================
+        // 2. ĐỌC FILE BINARY (Dùng DataInputStream)
+        // LƯU Ý: Phải đọc ĐÚNG THỨ TỰ như khi đã ghi
+        // ==========================================
+        try (DataInputStream dis = new DataInputStream(
+                new BufferedInputStream(new FileInputStream(fileName)))) {
+            
+            int i = dis.readInt();
+            double d = dis.readDouble();
+            boolean b = dis.readBoolean();
+            String s = dis.readUTF();
+            
+            System.out.println("\nĐọc từ file nhị phân:");
+            System.out.println("Int: " + i);
+            System.out.println("Double: " + d);
+            System.out.println("Boolean: " + b);
+            System.out.println("String: " + s);
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+---
+
+## 4. Lưu và đọc List Sinh viên với File Text
+
+Việc lưu một List Object vào file text thường sử dụng định dạng **CSV (Comma Separated Values)**. Mỗi dòng là 1 đối tượng, các thuộc tính cách nhau bởi dấu phẩy (hoặc dấu chấm phẩy).
+
+```java
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
+class Student {
+    int id;
+    String name;
+    double gpa;
+
+    public Student(int id, String name, double gpa) {
+        this.id = id; this.name = name; this.gpa = gpa;
+    }
+    
+    // Hàm tiện ích để chuyển Object thành 1 dòng CSV
+    public String toCSV() {
+        return id + "," + name + "," + gpa;
+    }
+
+    // Hàm tiện ích để parse từ dòng CSV thành Object
+    public static Student fromCSV(String csvLine) {
+        String[] parts = csvLine.split(",");
+        return new Student(
+            Integer.parseInt(parts[0]), 
+            parts[1], 
+            Double.parseDouble(parts[2])
+        );
+    }
+
+    @Override
+    public String toString() {
+        return "Student{id=" + id + ", name='" + name + "', gpa=" + gpa + '}';
+    }
+}
+
+public class TextListDemo {
+    public static void main(String[] args) {
+        List<Student> students = new ArrayList<>();
+        students.add(new Student(1, "Nguyễn Văn A", 8.5));
+        students.add(new Student(2, "Trần Thị B", 9.0));
+        students.add(new Student(3, "Lê Hoàng C", 7.5));
+
+        String fileCsv = "students.txt";
+
+        // ===== 1. GHI LIST VÀO FILE TEXT =====
+        try (PrintWriter pw = new PrintWriter(new FileWriter(fileCsv))) {
+            for (Student s : students) {
+                pw.println(s.toCSV());
+            }
+            System.out.println("Đã ghi List vào file Text (CSV)");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // ===== 2. ĐỌC LIST TỪ FILE TEXT =====
+        List<Student> loadedList = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(fileCsv))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                loadedList.add(Student.fromCSV(line));
+            }
+            
+            System.out.println("\nĐã đọc List từ file Text:");
+            for (Student s : loadedList) {
+                System.out.println(s);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+---
+
+## 5. Lưu và đọc List Sinh viên với File Binary (Serialization)
+
+Với File Binary, chúng ta không cần phải parse chuỗi (như `split(",")`). Java cung cấp cơ chế **Serialization (Tuần tự hóa)** để biến cả một khối Object (hoặc List các Object) thành chuỗi byte và lưu thẳng xuống file, lúc đọc lên nó tự động thành lại cấu trúc Object ban đầu.
+
+**⚠️ Điều kiện BẮT BUỘC:** Class `Student` và tất cả thuộc tính bên trong nó đều PHẢI implement interface `java.io.Serializable`.
+
+```java
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
+// ĐIỀU KIỆN 1: implements Serializable
+class StudentBin implements Serializable {
+    // ĐIỀU KIỆN 2 (Tùy chọn nhưng NÊN có): serialVersionUID để kiểm soát phiên bản class
+    private static final long serialVersionUID = 1L; 
+    
+    int id;
+    String name;
+    
+    // Từ khóa "transient": Bỏ qua thuộc tính này, KHÔNG lưu vào file
+    transient String password; 
+    
+    double gpa;
+
+    public StudentBin(int id, String name, String password, double gpa) {
+        this.id = id; this.name = name; this.password = password; this.gpa = gpa;
+    }
+
+    @Override
+    public String toString() {
+        return "StudentBin{id=" + id + ", name='" + name + "', pass='" + password + "', gpa=" + gpa + '}';
+    }
+}
+
+public class BinaryListDemo {
+    public static void main(String[] args) {
+        List<StudentBin> students = new ArrayList<>();
+        students.add(new StudentBin(1, "Nguyễn Văn A", "secret1", 8.5));
+        students.add(new StudentBin(2, "Trần Thị B", "secret2", 9.0));
+
+        String fileDat = "students.dat";
+
+        // ===== 1. GHI OBJECT (LIST) VÀO FILE BINARY =====
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fileDat))) {
+            // Ghi CẢ List trong 1 câu lệnh duy nhất!
+            oos.writeObject(students); 
+            System.out.println("Đã ghi List vào file Binary thành công.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // ===== 2. ĐỌC OBJECT (LIST) TỪ FILE BINARY =====
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fileDat))) {
+            // Đọc cục dữ liệu lên và Ép kiểu về List
+            @SuppressWarnings("unchecked")
+            List<StudentBin> loadedList = (List<StudentBin>) ois.readObject();
+            
+            System.out.println("\nĐã đọc List từ file Binary:");
+            for (StudentBin s : loadedList) {
+                // Nhận xét: Thuộc tính password (transient) sẽ có giá trị null
+                System.out.println(s);
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### 5.1 So sánh Lưu File Text vs Lưu File Binary (Serialization)
+
+| Tiêu chí | File Text (CSV / JSON) | File Binary (Serialization) |
+|---|---|---|
+| **Định dạng file** | Có thể đọc bằng con người (Notepad, Excel) | Ký tự lạ, máy mới đọc được |
+| **Tốc độ / Kích thước** | Chậm hơn (vì phải parse string), file nặng hơn | Nhanh hơn, file thường nhỏ gọn hơn |
+| **Tính bảo mật** | Dễ bị sửa đổi bên ngoài | Khó đọc/sửa hơn (nhưng vẫn có thể decode) |
+| **Dễ bảo trì** | Cao, nếu class thay đổi cấu trúc, vẫn parse text dễ | Thấp, nếu class đổi cấu trúc mà khác `serialVersionUID`, lúc đọc lại sẽ bị văng lỗi `InvalidClassException` |
+| **Khả năng tích hợp** | Java có thể giao tiếp với C#, Python, Web dễ dàng | Thường chỉ Java đọc được file Serialize của Java |
+
+---
+
+## 6. Đọc dữ liệu từ một HTTP URL (GET Method)
+
+Khi bạn muốn gọi API hoặc lấy nội dung từ một trang web qua giao thức HTTP (phương thức GET). Java có 2 cách phổ biến:
+1. Dùng **`HttpURLConnection`** (Cách cũ, có từ Java 1.1)
+2. Dùng **`java.net.http.HttpClient`** (Cách hiện đại, có từ Java 11+, dễ dùng và hỗ trợ bất đồng bộ)
+
+### 6.1 Code ví dụ: Dùng `HttpURLConnection` (Cách truyền thống)
+
+```java
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+public class HttpOldDemo {
+    public static void main(String[] args) {
+        String urlString = "https://jsonplaceholder.typicode.com/posts/1"; // Demo API URL
+        
+        try {
+            // 1. Tạo đối tượng URL
+            URL url = new URL(urlString);
+            
+            // 2. Mở kết nối
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            
+            // 3. Cài đặt phương thức GET
+            connection.setRequestMethod("GET");
+            connection.setConnectTimeout(5000); // Timeout kết nối (5s)
+            connection.setReadTimeout(5000);    // Timeout đọc dữ liệu (5s)
+            
+            // 4. Lấy mã phản hồi (HTTP Status Code)
+            int status = connection.getResponseCode();
+            System.out.println("HTTP Status Code: " + status);
+            
+            if (status == 200) { // 200 = OK
+                // 5. Đọc dữ liệu trả về từ InputStream
+                // Dữ liệu từ mạng cũng chỉ là 1 luồng InputStream như đọc file!
+                BufferedReader in = new BufferedReader(
+                    new InputStreamReader(connection.getInputStream())
+                );
+                
+                String inputLine;
+                StringBuilder content = new StringBuilder(); // Dùng StringBuilder gom data
+                
+                while ((inputLine = in.readLine()) != null) {
+                    content.append(inputLine).append("\n");
+                }
+                in.close(); // Đóng stream
+                
+                System.out.println("Dữ liệu nhận được:");
+                System.out.println(content.toString());
+            } else {
+                System.out.println("Lỗi gọi API. HTTP Code: " + status);
+            }
+            
+            connection.disconnect(); // Ngắt kết nối
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### 6.2 Code ví dụ: Dùng `HttpClient` (Java 11+ / Đề xuất dùng)
+
+Class này được thêm vào từ Java 11, giải quyết tính dài dòng của `HttpURLConnection`.
+
+```java
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+public class HttpNewDemo {
+    public static void main(String[] args) {
+        String urlString = "https://jsonplaceholder.typicode.com/posts/1";
+        
+        // 1. Tạo HttpClient
+        HttpClient client = HttpClient.newHttpClient();
+        
+        // 2. Tạo HttpRequest với phương thức GET
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(urlString))
+                .GET()
+                .header("Accept", "application/json") // Header báo cho server kiểu data muốn nhận
+                .build();
+                
+        try {
+            // 3. Gửi Request đồng bộ (Gửi và đợi nhận về HttpResponse)
+            // HttpResponse.BodyHandlers.ofString() báo rằng ta muốn lấy dữ liệu kiểu String
+            HttpResponse<String> response = client.send(
+                request, 
+                HttpResponse.BodyHandlers.ofString()
+            );
+            
+            // 4. Đọc kết quả
+            System.out.println("HTTP Status Code: " + response.statusCode());
+            if (response.statusCode() == 200) {
+                System.out.println("Dữ liệu nhận được:");
+                System.out.println(response.body());
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+> 💡 **Giải thích cách hoạt động của GET request:**
+> 1. Client tạo một Connection tới Server theo cái URL.
+> 2. Gửi một gói tin chuẩn HTTP có Method = `GET`.
+> 3. Server xử lý và trả về 1 Response gồm 2 phần: Header (chứa Status Code: 200 OK, 404 Not Found...) và Body (chứa data dưới dạng Text, HTML hoặc JSON).
+> 4. Phía Java dùng Input Stream / BodyHandler để hứng cái Body đó về thành chuỗi String.
+
+---
+
+> **📌 Kết thúc Phần 5: Đọc Ghi File & Mạng**
 >
-> Phần tiếp theo: [Phần 4: Xử Lý Ngoại Lệ](#phần-4-xử-lý-ngoại-lệ) *(sẽ được bổ sung)*
+> Phần tiếp theo: [Phần 6: Data Structures (Cấu trúc dữ liệu)](#phần-6-data-structures) *(sẽ được bổ sung)*
