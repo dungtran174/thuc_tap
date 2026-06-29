@@ -9145,11 +9145,116 @@ public class SecurityUtils {
 
 ---
 
-> **📌 KẾT THÚC SERIES LÝ THUYẾT JAVA CORE TẠI ĐÂY**
+> **📌 Kết thúc Phần 14: Quy chuẩn code Java**
+
+---
+
+# Phần 15: Cấu trúc dữ liệu và Thuật toán (Data Structures & Algorithms)
+
+## 📌 Mục lục
+1. [Cấu trúc dữ liệu cơ bản và So sánh Ưu/Nhược điểm](#1-cấu-trúc-dữ-liệu-cơ-bản-và-so-sánh-ưunhược-điểm)
+2. [Thuật toán Tìm kiếm & Sắp xếp](#2-thuật-toán-tìm-kiếm--sắp-xếp)
+3. [Cấu trúc dữ liệu Cây (Tree) và Đồ thị (Graph)](#3-cấu-trúc-dữ-liệu-cây-tree-và-đồ-thị-graph)
+4. [Các thuật toán Duyệt Đồ thị (BFS & DFS)](#4-các-thuật-toán-duyệt-đồ-thị-bfs--dfs)
+5. [Cây Nhị Phân Tìm Kiếm (BST) & Cách cân bằng Cây](#5-cây-nhị-phân-tìm-kiếm-bst--cách-cân-bằng-cây)
+
+---
+
+## 1. Cấu trúc dữ liệu cơ bản và So sánh Ưu/Nhược điểm
+
+### 1.1 Mảng (Array)
+Là tập hợp các phần tử CÙNG KIỂU, được lưu trữ LIÊN TIẾP nhau trong bộ nhớ RAM.
+- **Ưu điểm:** Tốc độ truy xuất (Đọc) cực kì nhanh `O(1)` thông qua chỉ số index (Ví dụ: `arr[5]`).
+- **Nhược điểm:** Kích thước cố định (không thể phình to hay thu nhỏ sau khi tạo). Thêm/Xóa phần tử ở giữa mảng rất chậm `O(n)` vì phải dịch chuyển tất cả các phần tử phía sau.
+
+### 1.2 Danh sách liên kết (Linked List)
+Mỗi phần tử (Node) nằm rải rác trên RAM. Một Node chứa dữ liệu và một Con trỏ (Pointer) chỉ đường tới Node tiếp theo.
+- **Ưu điểm:** Kích thước co giãn linh hoạt. Thêm/Xóa phần tử ở đầu/cuối hoặc khi đã biết vị trí thì cực nhanh `O(1)` (chỉ cần bẻ lại hướng của con trỏ).
+- **Nhược điểm:** Tìm kiếm/Đọc dữ liệu cực chậm `O(n)` vì phải duyệt lần lượt từ phần tử đầu tiên (đầu dây) trở đi.
+
+### 1.3 Ngăn xếp (Stack)
+Hoạt động theo nguyên tắc **LIFO (Last In, First Out - Vào sau ra trước)**.
+Giống như xếp 1 chồng đĩa: Đĩa nào đặt lên sau cùng sẽ được lấy ra đầu tiên.
+- **Ưu điểm:** Hoàn hảo cho các bài toán: Nút Undo (Hoàn tác), Khử đệ quy, Lịch sử trình duyệt.
+- **Các hàm chính:** `push()` (Thêm vào đỉnh), `pop()` (Lấy ra và xóa ở đỉnh), `peek()` (Chỉ xem đỉnh).
+
+### 1.4 Hàng đợi (Queue)
+Hoạt động theo nguyên tắc **FIFO (First In, First Out - Vào trước ra trước)**.
+Giống như xếp hàng mua vé: Ai đến xếp hàng trước sẽ được phục vụ trước.
+- **Ưu điểm:** Dùng cho Hàng đợi tin nhắn (Message Queue), Lập lịch tiến trình CPU, Duyệt đồ thị BFS.
+- **Các hàm chính:** `enqueue/offer()` (Thêm vào cuối), `dequeue/poll()` (Lấy ra ở đầu).
+
+---
+
+## 2. Thuật toán Tìm kiếm & Sắp xếp
+
+### 2.1 Thuật toán Tìm kiếm (Search)
+- **Tìm kiếm tuyến tính (Linear Search):** Duyệt từng phần tử từ đầu đến cuối xem có khớp không. Độ phức tạp `O(n)`. (Dùng cho mảng lộn xộn).
+- **Tìm kiếm nhị phân (Binary Search):** ⚠️ *Bắt buộc mảng phải được Sắp Xếp trước.* Thuật toán chia đôi mảng liên tục để loại bỏ một nửa số phần tử mỗi lần tìm. Độ phức tạp cực nhanh `O(log n)`. (Ví dụ: Tìm số trong 1 tỷ số chỉ mất tối đa 30 lần chia đôi).
+
+### 2.2 Thuật toán Sắp xếp (Sort)
+- **Bubble Sort (Sắp xếp nổi bọt):** Duyệt từng cặp phần tử liền kề, sai vị trí thì đổi chỗ cho nhau. Chậm nhất, độ phức tạp `O(n^2)`.
+- **Quick Sort (Sắp xếp nhanh):** Chọn 1 điểm mốc (Pivot). Ném các số nhỏ hơn Pivot sang trái, lớn hơn sang phải. Sau đó Đệ quy làm tiếp với 2 nửa. Cực nhanh `O(n log n)`, hay được sử dụng thực tế.
+- **Merge Sort (Sắp xếp trộn):** Chia mảng làm đôi liên tục cho đến khi chỉ còn 1 phần tử. Sau đó bắt đầu "trộn" 2 mảng nhỏ đã sắp xếp lại thành mảng lớn. Nhanh và Ổn định `O(n log n)`, nhưng tốn thêm RAM để lưu mảng phụ.
+
+---
+
+## 3. Cấu trúc dữ liệu Cây (Tree) và Đồ thị (Graph)
+
+### 3.1 Cây (Tree)
+Là cấu trúc dữ liệu phân cấp, có quan hệ **Cha - Con**. Có 1 gốc duy nhất (Root). Một Cha có thể có nhiều Con, nhưng Một Con chỉ có 1 Cha. (Không có vòng lặp).
+*Ví dụ:* Sơ đồ tổ chức công ty, Cây thư mục máy tính, Cấu trúc thẻ HTML (DOM).
+
+### 3.2 Đồ thị (Graph)
+Là cấu trúc dữ liệu phức tạp hơn, gồm các Đỉnh (Vertex/Node) và các Cạnh (Edge) nối các đỉnh lại với nhau. Không có khái niệm Gốc, Mọi đỉnh đều có thể nối với mọi đỉnh, có thể tạo thành Vòng lặp.
+*Ví dụ:* Bản đồ đường đi (Google Maps), Mạng xã hội (A là bạn của B, B là bạn của C).
+
+---
+
+## 4. Các thuật toán Duyệt Đồ thị (BFS & DFS)
+
+Khi đứng ở 1 đỉnh và muốn đi thăm tất cả các đỉnh còn lại trong Đồ thị, ta có 2 chiến thuật:
+
+### 4.1 Duyệt theo chiều rộng (BFS - Breadth-First Search)
+- **Chiến thuật:** Lan tỏa như sóng nước. Thăm hết tất cả các "Người quen tầng 1" (Hàng xóm sát vách), rồi mới lan sang "Người quen tầng 2"...
+- **Công cụ sử dụng:** `Queue` (Hàng đợi). Ai được nhìn thấy trước sẽ được xếp vào hàng đợi để thăm trước.
+- **Ứng dụng:** Tìm **Đường đi ngắn nhất** (Shortest path) trên đồ thị không trọng số (Ví dụ: Tìm bạn chung gần nhất trên Facebook).
+
+### 4.2 Duyệt theo chiều sâu (DFS - Depth-First Search)
+- **Chiến thuật:** Đi lạc trong mê cung. Cứ chọn 1 ngã rẽ và đi "Đâm lao theo lao" sâu nhất có thể cho tới khi đâm vào ngõ cụt thì mới quay lui (Backtrack) lại ngã ba gần nhất để đi hướng khác.
+- **Công cụ sử dụng:** `Stack` (Ngăn xếp) hoặc viết hàm **Đệ quy**.
+- **Ứng dụng:** Tìm đường đi ra khỏi mê cung, Kiểm tra chu trình (Vòng lặp) trong đồ thị.
+
+---
+
+## 5. Cây Nhị Phân Tìm Kiếm (BST) & Cách cân bằng Cây
+
+### 5.1 Cây nhị phân tìm kiếm (Binary Search Tree - BST)
+Là một cây tuân thủ 2 quy tắc vàng:
+1. Mỗi Node cha có TỐI ĐA 2 node con (Nhị phân - Trái và Phải).
+2. Quy tắc tìm kiếm: Tất cả các con bên **TRÁI** phải **NHỎ HƠN** node cha. Tất cả các con bên **PHẢI** phải **LỚN HƠN** node cha.
+
+*Ưu điểm:* Việc tìm kiếm trên BST giống hệt "Tìm kiếm nhị phân". Bất kỳ lúc nào, ta cũng có thể loại bỏ 1 nửa cây. Độ phức tạp `O(log n)`.
+
+### 5.2 Vấn đề mất cân bằng
+Nếu bạn chèn lần lượt các số đã được sắp xếp `(1, 2, 3, 4, 5)` vào BST, cây sẽ bị lệch hẳn sang một bên (tất cả đều nằm bên Phải). 
+Lúc này, Cây bị thoái hóa biến thành một **Danh sách liên kết (Linked List)**. Việc tìm kiếm không còn là `O(log n)` nữa mà thảm họa trở về `O(n)`.
+
+### 5.3 Cách cân bằng Cây (Tự cân bằng - Self-Balancing Tree)
+Để khắc phục, người ta chế tạo ra các loại Cây thông minh, mỗi khi bạn thêm/xóa phần tử làm cây bị lệch, nó sẽ TỰ ĐỘNG THỰC HIỆN "PHÉP XOAY" (Rotation) cấu trúc node để kéo cây về trạng thái cân đối. Hai loại nổi tiếng nhất:
+
+1. **AVL Tree:** Cây cân bằng Cực kì chặt chẽ. Đảm bảo độ cao giữa nhánh Trái và nhánh Phải không bao giờ lệch nhau quá 1. (Rất tốt để Tìm kiếm liên tục).
+2. **Red-Black Tree (Cây Đỏ-Đen):** Cây cân bằng tương đối (Bằng cách tô màu Đỏ/Đen cho các Node và xoay theo luật). 
+   - Không bị xoay quá nhiều lần khi chèn dữ liệu như AVL.
+   - 🏆 *Thực tế:* Trong Java, cấu trúc dữ liệu `TreeMap` và `TreeSet` chính là được cài đặt ẩn bên dưới bằng **Red-Black Tree**.
+
+---
+
+> **📌 KẾT THÚC SERIES LÝ THUYẾT JAVA CORE & DATA STRUCTURES TẠI ĐÂY**
 > 
-> Bộ tài liệu này đã hệ thống lại một cách đầy đủ và chi tiết toàn bộ kiến thức về Ngôn ngữ Java. Từ Cơ bản (Lập trình, OOP, Exception, File), Trung cấp (Collections, Đa luồng), Java 8 (Lambda, Stream) cho tới Kiến thức thực chiến (Regex, Deploy ứng dụng, Coding Convention).
-> 
-> Chúc bạn ôn tập tốt và vững vàng nền tảng để tiến tới các Framework lớn!
+> Bộ tài liệu này đã hệ thống lại một cách đầy đủ và chi tiết toàn bộ kiến thức về Ngôn ngữ Java (từ Cơ bản đến Nâng cao) cùng với Nền tảng Thuật toán.
+> Chúc bạn học tập và áp dụng thật hiệu quả trong công việc thực tế!
+
 
 
 
