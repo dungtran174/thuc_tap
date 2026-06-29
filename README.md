@@ -8416,10 +8416,280 @@ public class SystemPropertiesDemo {
 
 ---
 
-> **📌 KẾT THÚC SERIES LÝ THUYẾT JAVA CORE**
->
-> Bộ tài liệu này đã bao quát các kiến thức từ Cơ bản, Hướng đối tượng, Ngoại lệ, I/O, Collections, Đa luồng cho tới các tính năng hiện đại như Lambda và Generics.
-> Chúc bạn ôn tập tốt và vững vàng nền tảng Java!
+> **📌 KẾT THÚC CÁC PHẦN TRƯỚC**
+
+---
+
+# Phần 11: Tính Năng Mới Java 8 (Stream API, Optional, Method Reference)
+
+## 📌 Mục lục
+1. [Default Method trong Interface](#1-default-method-trong-interface)
+2. [Method Reference (Tham chiếu phương thức)](#2-method-reference-tham-chiếu-phương-thức)
+3. [4 Cột trụ Functional Interface (Predicate, Consumer, Supplier, Function)](#3-4-cột-trụ-functional-interface-predicate-consumer-supplier-function)
+4. [Lớp Optional - Khắc tinh của NullPointerException](#4-lớp-optional---khắc-tinh-của-nullpointerexception)
+5. [Stream API toàn tập (Map, Filter, Collect, GroupBy, Statistics)](#5-stream-api-toàn-tập-map-filter-collect-groupby-statistics)
+6. [Xử lý song song với Parallel Stream](#6-xử-lý-song-song-với-parallel-stream)
+
+---
+
+## 1. Default Method trong Interface
+
+Trước Java 8, mọi phương thức trong Interface bắt buộc phải rỗng (chỉ có chữ ký hàm). Nhưng từ Java 8, Interface được phép có các **phương thức có sẵn thân hàm**, gọi là `default method`.
+
+**Mục đích:** Giúp mở rộng Interface (thêm tính năng mới) mà KHÔNG làm vỡ code của các Class cũ đã implements Interface đó.
+
+```java
+interface Vehicle {
+    void start(); // Abstract method cũ
+    
+    // Default method (Đã có thân hàm)
+    default void honk() {
+        System.out.println("Beep beep!");
+    }
+}
+
+class Car implements Vehicle {
+    @Override
+    public void start() { System.out.println("Car started"); }
+    // Không BẮT BUỘC phải Override hàm honk()
+}
+
+public class DefaultMethodDemo {
+    public static void main(String[] args) {
+        Car myCar = new Car();
+        myCar.start();
+        myCar.honk(); // Kế thừa thẳng từ Interface
+    }
+}
+```
+
+---
+
+## 2. Method Reference (Tham chiếu phương thức)
+
+Đây là phiên bản **"Rút gọn cực độ" của Lambda Expression**. Khi một Lambda chỉ làm duy nhất 1 việc là GỌI LẠI một phương thức đã có sẵn, ta dùng dấu `::` để trỏ thẳng tới hàm đó.
+
+Có 4 loại Method Reference:
+1. `ClassName::staticMethod` (Trỏ đến hàm Static)
+2. `instance::instanceMethod` (Trỏ đến hàm của một Object cụ thể)
+3. `ClassName::instanceMethod` (Trỏ đến hàm của 1 kiểu đối tượng)
+4. `ClassName::new` (Trỏ đến Constructor)
+
+```java
+import java.util.Arrays;
+import java.util.List;
+
+public class MethodRefDemo {
+    public static void main(String[] args) {
+        List<String> names = Arrays.asList("Anna", "Bob", "Charlie");
+
+        // 1. Cách dùng Lambda (Thường)
+        names.forEach(name -> System.out.println(name));
+
+        // 2. Cách dùng Method Reference (Ngắn gọn tuyệt đối)
+        // Thay vì truyền tham số 'name' rồi gọi hàm println, ta Trỏ thẳng tới hàm println
+        names.forEach(System.out::println);
+    }
+}
+```
+
+---
+
+## 3. 4 Cột trụ Functional Interface (Predicate, Consumer, Supplier, Function)
+
+Để hỗ trợ Stream API, Java cung cấp sẵn 4 Functional Interface "Trấn phái" trong package `java.util.function`:
+
+| Interface | Dữ liệu VÀO | Dữ liệu RA | Mục đích sử dụng | Hàm thực thi |
+|---|---|---|---|---|
+| **`Predicate<T>`** | 1 Tham số `T` | `boolean` | Kiểm tra điều kiện (Lọc dữ liệu) | `test(T)` |
+| **`Consumer<T>`** | 1 Tham số `T` | `void` | Xử lý nhưng không trả về gì (In ra) | `accept(T)` |
+| **`Supplier<T>`** | *Không có* | `T` | Trả về một đối tượng mới (Cung cấp) | `get()` |
+| **`Function<T, R>`** | 1 Tham số `T` | Đối tượng `R` | Nhận vào kiểu này, Trả về kiểu khác | `apply(T)` |
+
+### Ví dụ từng loại:
+```java
+import java.util.function.*;
+
+public class CoreFunctionalDemo {
+    public static void main(String[] args) {
+        
+        // 1. Predicate (Nhận int, Trả boolean) -> Kiểm tra chẵn lẻ
+        Predicate<Integer> isEven = num -> num % 2 == 0;
+        System.out.println("Là số chẵn? " + isEven.test(10)); // true
+
+        // 2. Consumer (Nhận String, Không trả về) -> In ra màn hình
+        Consumer<String> printer = text -> System.out.println("Xin chào " + text);
+        printer.accept("Admin");
+
+        // 3. Supplier (Không nhận, Trả String) -> Random dữ liệu
+        Supplier<Double> randomGen = () -> Math.random();
+        System.out.println("Random: " + randomGen.get());
+
+        // 4. Function (Nhận String, Trả Integer) -> Tính độ dài chuỗi
+        Function<String, Integer> lengthFunc = str -> str.length();
+        System.out.println("Độ dài chữ 'Java': " + lengthFunc.apply("Java"));
+    }
+}
+```
+
+---
+
+## 4. Lớp Optional - Khắc tinh của NullPointerException
+
+Tránh việc ứng dụng sập do biến bị `null`. `Optional` giống như một **Chiếc hộp**, nó có thể CÓ chứa giá trị (Present) hoặc KHÔNG chứa gì (Empty). Bạn phải mở hộp ra kiểm tra một cách an toàn.
+
+```java
+import java.util.Optional;
+
+public class OptionalDemo {
+    public static void main(String[] args) {
+        String dbResult = null; // Giả sử query DB không ra dữ liệu
+        
+        // Bọc dữ liệu vào hộp Optional. Tự động nhận diện Null
+        Optional<String> opt = Optional.ofNullable(dbResult);
+
+        // 1. Kiểm tra An Toàn (Thay thế cho: if (dbResult != null) )
+        opt.ifPresent(val -> System.out.println("Dữ liệu là: " + val));
+
+        // 2. Cung cấp giá trị Mặc Định (Nếu rỗng thì xài cái này)
+        String finalName = opt.orElse("Khách Vô Danh");
+        System.out.println("Tên: " + finalName); // Sẽ in ra "Khách Vô Danh" vì opt rỗng
+
+        // 3. Ném Exception nếu rỗng
+        // String mustHave = opt.orElseThrow(() -> new RuntimeException("Lỗi: Không tìm thấy!"));
+    }
+}
+```
+
+---
+
+## 5. Stream API toàn tập (Map, Filter, Collect, GroupBy, Statistics)
+
+**Stream** là cách duyệt và thao tác với Collection theo phong cách **Tuyên bố (Declarative)**. Bạn chỉ cần nói với Java "TÔI MUỐN GÌ" (Ví dụ: Lọc sinh viên điểm > 5) thay vì viết vòng lặp For dài dòng "TÔI LÀM NHƯ THẾ NÀO".
+
+- **Trung gian (Intermediate):** `filter`, `map`, `sorted` (Trả về một Stream mới, có thể chain tiếp).
+- **Kết thúc (Terminal):** `collect`, `forEach`, `count` (Trả về dữ liệu thật, đóng Stream).
+
+```java
+import java.util.*;
+import java.util.stream.Collectors;
+
+class SinhVien {
+    String ten, lop;
+    double diem;
+    public SinhVien(String t, String l, double d) { ten=t; lop=l; diem=d; }
+    public String getTen() { return ten; }
+    public String getLop() { return lop; }
+    public double getDiem() { return diem; }
+    @Override public String toString() { return ten + "-" + diem; }
+}
+
+public class StreamAPIDemo {
+    public static void main(String[] args) {
+        List<SinhVien> list = Arrays.asList(
+            new SinhVien("An", "IT1", 8.5),
+            new SinhVien("Bình", "IT2", 4.0),
+            new SinhVien("Cường", "IT1", 9.0),
+            new SinhVien("Dũng", "IT2", 6.5)
+        );
+
+        // =====================================
+        // 1. FILTER (Lọc) & COLLECT (Gom lại)
+        // =====================================
+        // Lấy danh sách Sinh Viên Đỗ (Điểm >= 5)
+        List<SinhVien> passList = list.stream()
+                .filter(sv -> sv.getDiem() >= 5.0)  // Dùng Predicate
+                .collect(Collectors.toList());      // Gom thành List mới
+        System.out.println("Đỗ: " + passList);
+
+        // =====================================
+        // 2. MAP (Biến đổi dữ liệu)
+        // =====================================
+        // Chỉ lấy ra 1 List chứa toàn "Tên" của các Sinh viên
+        List<String> names = list.stream()
+                .map(sv -> sv.getTen())  // Dùng Function (Biến SV -> String)
+                // .map(SinhVien::getTen) // Dùng Method Reference
+                .collect(Collectors.toList());
+        System.out.println("Tên: " + names);
+
+        // =====================================
+        // 3. COUNT (Đếm)
+        // =====================================
+        long countIT1 = list.stream().filter(sv -> sv.getLop().equals("IT1")).count();
+        System.out.println("Số SV IT1: " + countIT1);
+
+        // =====================================
+        // 4. GROUP BY (Nhóm dữ liệu lại theo key)
+        // =====================================
+        // Gom nhóm sinh viên theo "Lớp" (Map<String, List<SinhVien>>)
+        Map<String, List<SinhVien>> groupedByLop = list.stream()
+                .collect(Collectors.groupingBy(SinhVien::getLop));
+        System.out.println("\nNhóm theo lớp:");
+        groupedByLop.forEach((lop, svList) -> System.out.println(lop + ": " + svList));
+
+        // =====================================
+        // 5. STATISTICS (Thống kê toán học)
+        // =====================================
+        // Dùng mapToDouble để lấy ra các con số điểm, rồi tóm tắt (Max, Min, Sum, Avg)
+        DoubleSummaryStatistics stats = list.stream()
+                .mapToDouble(SinhVien::getDiem)
+                .summaryStatistics();
+        
+        System.out.println("\n--- THỐNG KÊ ĐIỂM SỐ ---");
+        System.out.println("Cao nhất: " + stats.getMax());
+        System.out.println("Thấp nhất: " + stats.getMin());
+        System.out.println("Trung bình: " + stats.getAverage());
+    }
+}
+```
+
+---
+
+## 6. Xử lý song song với Parallel Stream
+
+Nếu bạn có một List chứa 1 Triệu phần tử và muốn tăng tốc xử lý, bạn không cần tự viết Multi-threading rườm rà. Bạn chỉ cần đổi chữ `.stream()` thành `.parallelStream()`.
+
+Java sẽ tự động xé cái List ra thành nhiều mảng nhỏ, chia cho các Core CPU xử lý đồng thời, rồi cuối cùng ráp kết quả lại.
+
+```java
+import java.util.ArrayList;
+import java.util.List;
+
+public class ParallelDemo {
+    public static void main(String[] args) {
+        List<String> bigList = new ArrayList<>();
+        for (int i = 0; i < 1_000_000; i++) bigList.add("Item " + i);
+
+        long start, end;
+
+        // 1. Duyệt Tuần Tự (Chạy trên 1 Core)
+        start = System.currentTimeMillis();
+        long countNormal = bigList.stream()
+                                  .filter(s -> s.contains("999"))
+                                  .count();
+        end = System.currentTimeMillis();
+        System.out.println("Duyệt Tuần Tự mất: " + (end - start) + "ms");
+
+        // 2. Duyệt Song Song (Chạy trên Toàn bộ Core CPU)
+        start = System.currentTimeMillis();
+        long countParallel = bigList.parallelStream() // << CÚ PHÁP THẦN THÁNH
+                                    .filter(s -> s.contains("999"))
+                                    .count();
+        end = System.currentTimeMillis();
+        System.out.println("Duyệt Song Song mất: " + (end - start) + "ms");
+    }
+}
+```
+
+> ⚠️ **Khi nào NÊN và KHÔNG NÊN dùng Parallel Stream?**
+> - **NÊN DÙNG:** Khi số lượng phần tử cực lớn (> 100k) và công việc tính toán nặng (CPU-bound) không dính líu với nhau.
+> - **KHÔNG NÊN DÙNG:** Khi List quá nhỏ (tạo luồng còn tốn thời gian hơn), hoặc khi các phần tử có sự lệ thuộc thứ tự, hoặc khi bạn gọi Database/API (I/O-bound) vì Thread Pool của Parallel có giới hạn chung, dễ làm treo cả hệ thống.
+
+---
+
+> **📌 KẾT THÚC SERIES JAVA CORE TẠI ĐÂY**
+> 
+> Bộ tài liệu này đã hệ thống lại một cách đầy đủ và chi tiết toàn bộ kiến thức về Ngôn ngữ Java (từ Cơ bản đến Nâng cao). Chúc bạn học tập và áp dụng thật hiệu quả trong công việc thực tế!
 
 
 
