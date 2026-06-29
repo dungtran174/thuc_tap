@@ -8192,7 +8192,235 @@ public class CustomLambdaDemo {
 
 > **📌 Kết thúc Phần 9: Lập trình Lambda**
 >
-> Phần tiếp theo: [Phần 10: Stream API](#phần-10-stream-api) *(sẽ được bổ sung)*
+> **📌 Kết thúc Phần 9: Lập trình Lambda**
+
+---
+
+# Phần 10: Các Vấn Đề Nâng Cao (Generics, Javadoc, Inner Class, Properties)
+
+## 📌 Mục lục
+1. [Generics (Kiểu dữ liệu trừu tượng)](#1-generics-kiểu-dữ-liệu-trừu-tượng)
+2. [Cách viết Javadoc chuẩn](#2-cách-viết-javadoc-chuẩn)
+3. [Inner Class (Lớp lồng nhau)](#3-inner-class-lớp-lồng-nhau)
+4. [Tìm hiểu thêm về Properties và System Properties](#4-tìm-hiểu-thêm-về-properties-và-system-properties)
+
+---
+
+## 1. Generics (Kiểu dữ liệu trừu tượng)
+
+**Generics** cho phép bạn định nghĩa các Class, Interface, hoặc Method với **kiểu dữ liệu là tham số** (Tham số hóa kiểu). Khái niệm này xuất hiện rất nhiều trong Collections (Ví dụ: `List<String>`, `Map<K, V>`).
+
+**Lợi ích của Generics:**
+1. **An toàn kiểu (Type-Safety):** Báo lỗi ngay lúc gõ code (Compile-time) nếu truyền sai kiểu, thay vì bị văng lỗi `ClassCastException` lúc đang chạy (Runtime).
+2. **Loại bỏ ép kiểu (Casting):** Không cần phải ép kiểu thủ công từ `Object` về `String` hay `Integer`.
+
+### 1.1 Generic Class (Lớp Generic)
+Sử dụng kí hiệu hình thoi `< >`. Chữ cái bên trong là tự do, nhưng quy ước chung là: `T` (Type), `E` (Element), `K` (Key), `V` (Value).
+
+```java
+// Khai báo một lớp "Hộp" có thể chứa BẤT KỲ kiểu dữ liệu nào
+class Box<T> {
+    private T item;
+    
+    public void setItem(T item) { this.item = item; }
+    public T getItem() { return item; }
+}
+
+public class GenericDemo {
+    public static void main(String[] args) {
+        // Hộp chứa số nguyên
+        Box<Integer> intBox = new Box<>();
+        intBox.setItem(100);
+        int val = intBox.getItem(); // KHÔNG CẦN ÉP KIỂU: (Integer) intBox.getItem();
+
+        // Hộp chứa chuỗi
+        Box<String> strBox = new Box<>();
+        strBox.setItem("Hello");
+    }
+}
+```
+
+### 1.2 Generic Method (Phương thức Generic)
+Bạn có thể dùng Generic cho 1 phương thức duy nhất mà không cần cả Class phải là Generic.
+
+```java
+public class GenericMethod {
+    // Kí hiệu <T> phải đặt trước kiểu trả về (void)
+    public static <T> void printArray(T[] array) {
+        for (T element : array) {
+            System.out.print(element + " ");
+        }
+        System.out.println();
+    }
+
+    public static void main(String[] args) {
+        Integer[] intArray = {1, 2, 3};
+        String[] strArray = {"A", "B", "C"};
+
+        printArray(intArray); // 1 2 3
+        printArray(strArray); // A B C
+    }
+}
+```
+
+### 1.3 Ký tự đại diện Wildcard (`?`)
+- `<?>`: Không giới hạn kiểu.
+- `<? extends Number>` (Upper Bounded): Chỉ chấp nhận Number hoặc con của Number (Ví dụ: Integer, Double).
+- `<? super Integer>` (Lower Bounded): Chỉ chấp nhận Integer hoặc cha của Integer (Ví dụ: Number, Object).
+
+---
+
+## 2. Cách viết Javadoc chuẩn
+
+**Javadoc** là hệ thống công cụ giúp tự động tạo tài liệu HTML từ các comment đặc biệt trong mã nguồn Java.
+
+### 2.1 Cú pháp Javadoc
+Comment Javadoc bắt đầu bằng `/**` và kết thúc bằng `*/`. Thường được đặt ở trên khai báo Class, Field, hoặc Method.
+
+| Thẻ (Tag) | Ý nghĩa |
+|---|---|
+| `@author` | Tên tác giả |
+| `@version` | Phiên bản |
+| `@since` | Tính năng này có từ phiên bản nào |
+| `@param` | Giải thích tham số đầu vào của hàm |
+| `@return` | Giải thích dữ liệu trả về của hàm |
+| `@throws` | Liệt kê các Exception mà hàm có thể ném ra |
+| `@deprecated` | Đánh dấu hàm/class này đã cũ, không nên dùng nữa |
+
+### 2.2 Ví dụ đầy đủ
+
+```java
+/**
+ * Lớp đại diện cho một Máy tính điện tử.
+ * Cung cấp các phép toán số học cơ bản.
+ * 
+ * @author Nguyen Van A
+ * @version 1.0
+ * @since 2026-06
+ */
+public class Calculator {
+
+    /**
+     * Thực hiện phép chia hai số nguyên.
+     * 
+     * @param a Số bị chia
+     * @param b Số chia
+     * @return Kết quả phép chia của a cho b
+     * @throws ArithmeticException Nếu số chia b bằng 0
+     * @deprecated Hãy sử dụng hàm divideDouble() thay thế để tránh làm tròn
+     */
+    @Deprecated
+    public int divide(int a, int b) throws ArithmeticException {
+        if (b == 0) {
+            throw new ArithmeticException("Không thể chia cho 0");
+        }
+        return a / b;
+    }
+}
+```
+*Lưu ý:* Hầu hết các IDE (Eclipse, IntelliJ) đều hỗ trợ xuất Javadoc thành một trang web tài liệu (giống hệt trang docs của Oracle) chỉ bằng 1 cú click chuột (Tool -> Generate Javadoc).
+
+---
+
+## 3. Inner Class (Lớp lồng nhau)
+
+Inner Class là việc khai báo **một Class bên trong một Class khác**. Có 4 loại Inner Class chính:
+
+### 3.1 Non-static Inner Class (Lớp lồng thông thường)
+- Gắn liền với đối tượng (Object) của lớp ngoài (Outer Class).
+- Có thể truy cập thoải mái các biến `private` của lớp ngoài.
+
+```java
+class Outer {
+    private String secret = "Bí mật Outer";
+
+    class Inner {
+        void show() {
+            System.out.println("Truy cập từ Inner: " + secret);
+        }
+    }
+}
+
+public class TestInner {
+    public static void main(String[] args) {
+        // Phải tạo Outer trước thì mới tạo được Inner
+        Outer outer = new Outer();
+        Outer.Inner inner = outer.new Inner();
+        inner.show();
+    }
+}
+```
+
+### 3.2 Static Nested Class (Lớp lồng tĩnh)
+- Khai báo bằng từ khóa `static`. Không gắn với đối tượng Outer.
+- Khởi tạo trực tiếp không cần tạo Outer: `Outer.Inner obj = new Outer.Inner();`
+
+### 3.3 Local Inner Class (Lớp lồng trong hàm)
+- Được định nghĩa **bên trong một phương thức** (hàm). Phạm vi sử dụng chỉ nằm gọn trong hàm đó. (Rất ít dùng).
+
+### 3.4 Anonymous Inner Class (Lớp ẩn danh)
+- Không có tên, dùng để **kế thừa/triển khai một Class/Interface và tạo luôn 1 object** ngay tại chỗ. (Đã học ở phần Lambda).
+- Ứng dụng nhiều nhất trong lập trình giao diện (Bắt sự kiện onClick của nút bấm).
+
+```java
+Runnable r = new Runnable() {
+    @Override
+    public void run() {
+        System.out.println("Chạy bằng Anonymous Class");
+    }
+};
+```
+
+---
+
+## 4. Tìm hiểu thêm về Properties và System Properties
+
+> Về thao tác Đọc/Ghi file `config.properties`, bạn có thể xem lại **Phần 6 - Mục 5**. 
+> Tuy nhiên, `Properties` còn một ứng dụng cực kì mạnh mẽ khác: **System Properties (Thuộc tính Hệ thống)**.
+
+Khi Java chạy, JVM sẽ khởi tạo sẵn một bảng `Properties` chứa mọi thông tin của hệ điều hành và môi trường chạy.
+
+### Code lấy thông tin Hệ thống:
+```java
+import java.util.Properties;
+
+public class SystemPropertiesDemo {
+    public static void main(String[] args) {
+        // 1. Lấy toàn bộ thuộc tính của Hệ thống
+        Properties sysProps = System.getProperties();
+        
+        // In ra tất cả (rất dài)
+        // sysProps.list(System.out); 
+        
+        // 2. Lấy các thông số phổ biến
+        System.out.println("--- THÔNG TIN HỆ THỐNG ---");
+        System.out.println("Hệ điều hành: " + System.getProperty("os.name"));
+        System.out.println("Phiên bản OS: " + System.getProperty("os.version"));
+        System.out.println("Tên User máy tính: " + System.getProperty("user.name"));
+        
+        System.out.println("\n--- THÔNG TIN JAVA ---");
+        System.out.println("Phiên bản Java: " + System.getProperty("java.version"));
+        System.out.println("Thư mục cài Java: " + System.getProperty("java.home"));
+        
+        System.out.println("\n--- THÔNG TIN THƯ MỤC ---");
+        System.out.println("Thư mục hiện tại (CWD): " + System.getProperty("user.dir"));
+        
+        // 3. Tự truyền Property từ Terminal lúc chạy code
+        // Chạy lệnh: java -DmyEnv="Production" SystemPropertiesDemo
+        String myEnv = System.getProperty("myEnv", "Chưa cài đặt");
+        System.out.println("\nBiến tự truyền (myEnv): " + myEnv);
+    }
+}
+```
+**Ứng dụng thực tế:** Khi chạy ứng dụng trên Docker/Server Linux, ta thường truyền các thông số môi trường qua cờ `-D` (Ví dụ `-Dspring.profiles.active=dev`) lúc khởi động ứng dụng Java để thay đổi cấu hình app mà không cần sửa code.
+
+---
+
+> **📌 KẾT THÚC SERIES LÝ THUYẾT JAVA CORE**
+>
+> Bộ tài liệu này đã bao quát các kiến thức từ Cơ bản, Hướng đối tượng, Ngoại lệ, I/O, Collections, Đa luồng cho tới các tính năng hiện đại như Lambda và Generics.
+> Chúc bạn ôn tập tốt và vững vàng nền tảng Java!
+
 
 
 
