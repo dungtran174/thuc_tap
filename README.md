@@ -6873,5 +6873,571 @@ public class HttpNewDemo {
 ---
 
 > **📌 Kết thúc Phần 5: Đọc Ghi File & Mạng**
+
+---
+
+# Phần 6: Cách Sử Dụng Các Kiểu Dữ Liệu Đặc Biệt
+
+## 📌 Mục lục
+1. [Enum - Kiểu dữ liệu liệt kê](#1-enum---kiểu-dữ-liệu-liệt-kê)
+2. [Các cấu trúc dữ liệu cơ bản (BitSet, Vector, Stack, Queue)](#2-các-cấu-trúc-dữ-liệu-cơ-bản-bitset-vector-stack-queue)
+3. [Sử dụng Stack để khử đệ quy](#3-sử-dụng-stack-để-khử-đệ-quy)
+4. [Sử dụng Queue để duyệt đồ thị (BFS)](#4-sử-dụng-queue-để-duyệt-đồ-thị-bfs)
+5. [Properties - Đọc/Ghi file cấu hình (config.properties)](#5-properties---đọc-ghi-file-cấu-hình-configproperties)
+6. [Xử lý Ngày Tháng (Date và LocalDate)](#6-xử-lý-ngày-tháng-date-và-localdate)
+7. [Chuyển đổi Date sang String (DateFormat)](#7-chuyển-đổi-date-sang-string-dateformat)
+
+---
+
+## 1. Enum - Kiểu dữ liệu liệt kê
+
+### 1.1 Enum cơ bản
+**Enum (Enumeration)** là một kiểu dữ liệu đặc biệt dùng để định nghĩa một tập hợp các **hằng số cố định**.
+Sử dụng enum giúp code an toàn hơn (type-safe) thay vì dùng các số nguyên hay chuỗi rời rạc (Ví dụ: Trạng thái đơn hàng, Ngày trong tuần).
+
+```java
+// Khai báo Enum cơ bản
+enum Day {
+    MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY
+}
+
+public class EnumBasicDemo {
+    public static void main(String[] args) {
+        Day today = Day.MONDAY;
+        
+        // So sánh enum
+        if (today == Day.MONDAY) {
+            System.out.println("Hôm nay là Thứ Hai");
+        }
+        
+        // Dùng enum trong switch-case rất tiện
+        switch (today) {
+            case MONDAY:
+            case TUESDAY:
+                System.out.println("Đầu tuần làm việc");
+                break;
+            case SUNDAY:
+                System.out.println("Cuối tuần nghỉ ngơi");
+                break;
+        }
+        
+        // Duyệt qua tất cả các giá trị của Enum
+        for (Day d : Day.values()) {
+            System.out.print(d + " "); // MONDAY TUESDAY WEDNESDAY...
+        }
+    }
+}
+```
+
+### 1.2 Tạo Enum bằng giá trị (Custom Enum)
+Trong Java, Enum bản chất là một Class. Bạn có thể thêm **thuộc tính, constructor và phương thức** cho Enum.
+
+```java
+// Khai báo Enum có chứa giá trị tùy chỉnh
+enum OrderStatus {
+    PENDING(0, "Chờ xử lý"),
+    PROCESSING(1, "Đang xử lý"),
+    SHIPPED(2, "Đã giao hàng"),
+    CANCELLED(-1, "Đã hủy");
+
+    // Các thuộc tính của Enum
+    private final int code;
+    private final String description;
+
+    // Constructor của Enum (Bắt buộc phải là private hoặc không ghi gì)
+    OrderStatus(int code, String description) {
+        this.code = code;
+        this.description = description;
+    }
+
+    // Getter
+    public int getCode() { return code; }
+    public String getDescription() { return description; }
+
+    // Viết một hàm tiện ích để tìm Enum từ Code
+    public static OrderStatus fromCode(int code) {
+        for (OrderStatus status : OrderStatus.values()) {
+            if (status.getCode() == code) {
+                return status;
+            }
+        }
+        throw new IllegalArgumentException("Mã trạng thái không hợp lệ: " + code);
+    }
+}
+
+public class EnumValueDemo {
+    public static void main(String[] args) {
+        OrderStatus status = OrderStatus.SHIPPED;
+        
+        System.out.println("Status: " + status);                     // SHIPPED
+        System.out.println("Mã code: " + status.getCode());          // 2
+        System.out.println("Mô tả: " + status.getDescription());     // Đã giao hàng
+        
+        // Chuyển từ số (lấy từ Database) sang Enum
+        OrderStatus dbStatus = OrderStatus.fromCode(-1);
+        System.out.println("Từ DB code -1: " + dbStatus.getDescription()); // Đã hủy
+    }
+}
+```
+
+---
+
+## 2. Các cấu trúc dữ liệu cơ bản (BitSet, Vector, Stack, Queue)
+
+### 2.1 BitSet
+`BitSet` là một mảng đặc biệt chỉ lưu các bit (`0` hoặc `1` / `false` hoặc `true`). 
+**Ưu điểm:** Cực kỳ tiết kiệm bộ nhớ khi cần lưu mảng hàng triệu cờ boolean, vì nó nén 8 bit vào 1 byte.
+
+```java
+import java.util.BitSet;
+
+public class BitSetDemo {
+    public static void main(String[] args) {
+        BitSet bits1 = new BitSet(16);
+        BitSet bits2 = new BitSet(16);
+
+        // Đặt bit 1 (true) tại các index
+        bits1.set(0); bits1.set(1); bits1.set(2);
+        bits2.set(1); bits2.set(2); bits2.set(3);
+
+        System.out.println("Bits1: " + bits1); // {0, 1, 2}
+        System.out.println("Bits2: " + bits2); // {1, 2, 3}
+
+        // Các phép toán bit logic
+        bits2.and(bits1); // Bits2 = Bits2 AND Bits1
+        System.out.println("Sau AND (Bits2): " + bits2); // {1, 2} (phần giao nhau)
+    }
+}
+```
+
+### 2.2 Vector
+`Vector` giống hệt `ArrayList` (mảng động tự giãn kích thước), nhưng các phương thức của nó được **đồng bộ hóa (Synchronized)**.
+- **Nhược điểm:** Chậm hơn ArrayList trong môi trường đơn luồng (single-thread).
+- Hiện nay ít dùng, thường thay bằng `ArrayList` hoặc `CopyOnWriteArrayList` cho đa luồng.
+
+```java
+import java.util.Vector;
+
+public class VectorDemo {
+    public static void main(String[] args) {
+        Vector<String> vector = new Vector<>();
+        vector.add("Apple");
+        vector.add("Banana");
+        System.out.println("Kích thước: " + vector.size());
+        System.out.println("Phần tử 0: " + vector.get(0));
+    }
+}
+```
+
+### 2.3 Stack (Ngăn xếp)
+- Nguyên lý: **LIFO** (Last In First Out - Vào sau ra trước). Giống như chồng đĩa.
+- Kế thừa từ `Vector`. Cung cấp các hàm `push()` (thêm), `pop()` (lấy ra và xóa), `peek()` (xem phần tử đầu mà không xóa).
+
+```java
+import java.util.Stack;
+
+public class StackDemo {
+    public static void main(String[] args) {
+        Stack<Integer> stack = new Stack<>();
+        
+        stack.push(10); // Đáy stack
+        stack.push(20);
+        stack.push(30); // Đỉnh stack
+
+        System.out.println("Đỉnh stack (peek): " + stack.peek()); // 30
+        System.out.println("Lấy ra (pop): " + stack.pop());       // 30
+        System.out.println("Còn lại trong stack: " + stack);      // [10, 20]
+    }
+}
+```
+
+### 2.4 Queue (Hàng đợi)
+- Nguyên lý: **FIFO** (First In First Out - Vào trước ra trước). Giống như xếp hàng mua vé.
+- `Queue` là một Interface. Thông thường ta dùng `LinkedList` để khởi tạo nó.
+- Cung cấp các hàm: `offer()`/`add()` (thêm), `poll()`/`remove()` (lấy ra), `peek()` (xem đầu hàng).
+
+```java
+import java.util.LinkedList;
+import java.util.Queue;
+
+public class QueueDemo {
+    public static void main(String[] args) {
+        Queue<String> queue = new LinkedList<>();
+        
+        queue.offer("Người A"); // Đầu hàng
+        queue.offer("Người B");
+        queue.offer("Người C"); // Cuối hàng
+
+        System.out.println("Đầu hàng (peek): " + queue.peek()); // Người A
+        System.out.println("Phục vụ (poll): " + queue.poll());  // Phục vụ Người A và xóa khỏi Queue
+        System.out.println("Còn lại trong Queue: " + queue);    // [Người B, Người C]
+    }
+}
+```
+
+---
+
+## 3. Sử dụng Stack để khử đệ quy
+
+Đệ quy bản chất là việc hệ điều hành sử dụng **Call Stack** (Ngăn xếp gọi hàm) của bộ nhớ RAM để lưu trạng thái hàm. Nếu đệ quy quá sâu sẽ bị lỗi `StackOverflowError`. Ta có thể tự định nghĩa một `Stack` (trên bộ nhớ Heap) để viết lại thuật toán bằng vòng lặp, hiện tượng này gọi là **khử đệ quy**.
+
+Dưới đây là ví dụ khử đệ quy hàm In các số từ 1 đến N:
+
+```java
+import java.util.Stack;
+
+public class EliminateRecursionDemo {
+    
+    // ===== 1. CÁCH DÙNG ĐỆ QUY (Dễ tràn bộ nhớ) =====
+    public static void recursivePrint(int n) {
+        if (n == 0) return;
+        recursivePrint(n - 1);       // Đệ quy
+        System.out.print(n + " ");
+    }
+
+    // ===== 2. CÁCH DÙNG STACK KHỬ ĐỆ QUY =====
+    // Ý tưởng mô phỏng lại hành vi của Call Stack
+    public static void stackPrint(int n) {
+        Stack<Integer> stack = new Stack<>();
+        
+        // Bước 1: Đẩy tất cả các công việc vào Stack (tương tự như gọi hàm)
+        // Vì Stack là LIFO (Vào sau ra trước), ta đẩy n vào trước, 1 vào sau
+        // Để khi pop ra, số 1 sẽ ra trước.
+        for (int i = n; i >= 1; i--) {
+            stack.push(i);
+        }
+
+        // Bước 2: Lấy ra và xử lý (tương tự như thực thi hàm)
+        while (!stack.isEmpty()) {
+            int current = stack.pop();
+            System.out.print(current + " ");
+        }
+    }
+
+    public static void main(String[] args) {
+        System.out.print("Đệ quy:  ");
+        recursivePrint(5); // 1 2 3 4 5
+        
+        System.out.print("\nStack:   ");
+        stackPrint(5);     // 1 2 3 4 5
+    }
+}
+```
+
+---
+
+## 4. Sử dụng Queue để duyệt đồ thị (BFS)
+
+**BFS (Breadth-First Search - Tìm kiếm theo chiều rộng)** là thuật toán duyệt các đỉnh của Đồ thị/Cây theo từng tầng (level). BFS sử dụng `Queue` (Hàng đợi) để ghi nhớ các đỉnh kề chưa được thăm.
+
+```java
+import java.util.*;
+
+// Biểu diễn Đồ thị bằng Danh sách kề (Adjacency List)
+class Graph {
+    private int V; // Số lượng đỉnh
+    private LinkedList<Integer>[] adj; // Mảng các danh sách kề
+
+    @SuppressWarnings("unchecked")
+    public Graph(int v) {
+        V = v;
+        adj = new LinkedList[v];
+        for (int i = 0; i < v; ++i)
+            adj[i] = new LinkedList<>();
+    }
+
+    // Thêm cạnh nối Đỉnh v và Đỉnh w (đồ thị có hướng)
+    public void addEdge(int v, int w) {
+        adj[v].add(w);
+    }
+
+    // ===== THUẬT TOÁN BFS DÙNG QUEUE =====
+    public void BFS(int startNode) {
+        // Mảng đánh dấu các đỉnh đã thăm để không bị lặp vòng vô tận
+        boolean[] visited = new boolean[V];
+
+        // Tạo một Hàng đợi (Queue) cho BFS
+        Queue<Integer> queue = new LinkedList<>();
+
+        // Đánh dấu đỉnh bắt đầu là đã thăm và đưa vào hàng đợi
+        visited[startNode] = true;
+        queue.offer(startNode);
+
+        System.out.print("Thứ tự duyệt BFS từ đỉnh " + startNode + ": ");
+
+        while (!queue.isEmpty()) {
+            // 1. Lấy đỉnh ở đầu Queue ra và in
+            int current = queue.poll();
+            System.out.print(current + " ");
+
+            // 2. Lấy tất cả các đỉnh kề của đỉnh vừa lấy ra
+            for (int neighbor : adj[current]) {
+                // Nếu đỉnh kề chưa được thăm
+                if (!visited[neighbor]) {
+                    visited[neighbor] = true; // Đánh dấu đã thăm
+                    queue.offer(neighbor);    // Đưa vào cuối Queue để duyệt sau
+                }
+            }
+        }
+        System.out.println();
+    }
+}
+
+public class BFSDemo {
+    public static void main(String[] args) {
+        /* Tạo đồ thị:
+           0 ---> 1
+           |      |
+           v      v
+           2 ---> 3 ---> 4
+        */
+        Graph g = new Graph(5);
+        g.addEdge(0, 1);
+        g.addEdge(0, 2);
+        g.addEdge(1, 3);
+        g.addEdge(2, 3);
+        g.addEdge(3, 4);
+
+        g.BFS(0); 
+        // Kết quả mong đợi: 0 1 2 3 4
+        // Tầng 1: Đỉnh 0
+        // Tầng 2: Đỉnh 1, 2
+        // Tầng 3: Đỉnh 3
+        // Tầng 4: Đỉnh 4
+    }
+}
+```
+
+---
+
+## 5. Properties - Đọc ghi file cấu hình config.properties
+
+Class `Properties` (kế thừa `Hashtable`) lưu dữ liệu dưới dạng **Key-Value** theo kiểu chuỗi (String). Nó cực kỳ phổ biến trong Java để lưu các thông số cấu hình ứng dụng (URL Database, port, username...).
+
+### 5.1 Code ví dụ Tạo, Đọc và Thêm cấu hình
+
+```java
+import java.io.*;
+import java.util.Properties;
+
+public class PropertiesDemo {
+    public static void main(String[] args) {
+        String fileName = "config.properties";
+
+        // =====================================
+        // 1. TẠO RA FILE CONFIG.PROPERTIES
+        // =====================================
+        Properties props = new Properties();
+        // Set các thông số cấu hình
+        props.setProperty("db.url", "localhost:3306");
+        props.setProperty("db.user", "admin");
+        props.setProperty("db.password", "123456");
+        
+        try (FileOutputStream out = new FileOutputStream(fileName)) {
+            // Ghi xuống file kèm comment giải thích
+            props.store(out, "Database Configuration File");
+            System.out.println("✅ Đã tạo file " + fileName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // =====================================
+        // 2. ĐỌC FILE CONFIG.PROPERTIES
+        // =====================================
+        Properties readProps = new Properties();
+        try (FileInputStream in = new FileInputStream(fileName)) {
+            readProps.load(in); // Tự động đọc và parse key-value
+            
+            System.out.println("\n--- ĐỌC CẤU HÌNH ---");
+            System.out.println("URL: " + readProps.getProperty("db.url"));
+            System.out.println("User: " + readProps.getProperty("db.user"));
+            // Lấy thuộc tính không tồn tại kèm giá trị mặc định
+            System.out.println("Timeout: " + readProps.getProperty("db.timeout", "5000 (default)"));
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // =====================================
+        // 3. THÊM CONFIG VÀO FILE (UPDATE)
+        // =====================================
+        try {
+            // Bước A: Phải đọc file cũ lên trước
+            Properties updateProps = new Properties();
+            try (FileInputStream in = new FileInputStream(fileName)) {
+                updateProps.load(in);
+            }
+            
+            // Bước B: Sửa đổi và Thêm mới
+            updateProps.setProperty("db.timeout", "8000"); // Thêm mới key
+            updateProps.setProperty("db.user", "root");    // Cập nhật key cũ
+            
+            // Bước C: Ghi đè lại file
+            try (FileOutputStream out = new FileOutputStream(fileName)) {
+                updateProps.store(out, "Updated Configuration");
+            }
+            System.out.println("\n✅ Đã cập nhật và thêm config mới vào file.");
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+**Nội dung file `config.properties` sinh ra:**
+```properties
+#Updated Configuration
+#Mon Jun 29 14:05:00 ICT 2026
+db.password=123456
+db.url=localhost\:3306
+db.user=root
+db.timeout=8000
+```
+
+---
+
+## 6. Xử lý Ngày Tháng (Date và LocalDate)
+
+Java có hai hệ thống xử lý thời gian chính:
+1. **`java.util.Date`** (Cũ): Thiết kế thiếu sót, có thể thay đổi (mutable).
+2. **`java.time.LocalDate`** (Từ Java 8): Thiết kế chuẩn quốc tế, không thể thay đổi (immutable), an toàn trong đa luồng (thread-safe). **(Khuyên dùng)**.
+
+### 6.1 So sánh và Cách sử dụng
+
+```java
+import java.util.Date;
+import java.util.Calendar;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+public class DateDemo {
+    public static void main(String[] args) {
+        
+        // =====================================
+        // 1. CÁCH CŨ: DÙNG java.util.Date
+        // =====================================
+        System.out.println("--- DÙNG DATE (CŨ) ---");
+        
+        Date oldDate = new Date(); // Lấy ngày giờ hiện tại
+        System.out.println("Date hiện tại: " + oldDate);
+
+        // Date cũ không có hàm cộng trừ ngày! Phải dùng qua class Calendar rất rườm rà
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(oldDate);
+        cal.add(Calendar.DAY_OF_MONTH, 5); // Cộng thêm 5 ngày
+        Date newOldDate = cal.getTime();
+        System.out.println("Sau khi cộng 5 ngày: " + newOldDate);
+
+
+        // =====================================
+        // 2. CÁCH MỚI: DÙNG java.time (JAVA 8+)
+        // =====================================
+        System.out.println("\n--- DÙNG LOCALDATE (MỚI) ---");
+        
+        // Lấy ngày hiện tại (Chỉ có ngày tháng năm, không có giờ)
+        LocalDate today = LocalDate.now();
+        System.out.println("Hôm nay: " + today);
+
+        // Khởi tạo một ngày cụ thể
+        LocalDate specificDate = LocalDate.of(2026, 12, 25);
+        System.out.println("Giáng sinh: " + specificDate);
+
+        // CỘNG TRỪ NGÀY THÁNG RẤT DỄ DÀNG
+        LocalDate nextWeek = today.plusDays(7);       // Cộng 7 ngày
+        LocalDate lastMonth = today.minusMonths(1);   // Trừ 1 tháng
+        LocalDate nextYear = today.plusYears(2);      // Cộng 2 năm
+        
+        System.out.println("Tuần sau: " + nextWeek);
+        System.out.println("Tháng trước: " + lastMonth);
+
+        // Các hàm tiện ích
+        System.out.println("Năm nhuận? " + today.isLeapYear());
+        System.out.println("Ngày trong tuần: " + today.getDayOfWeek()); // Ví dụ: MONDAY
+
+        // Nếu cần cả giờ phút giây thì dùng LocalDateTime
+        LocalDateTime nowDateTime = LocalDateTime.now();
+        System.out.println("\nNgày giờ hiện tại: " + nowDateTime);
+    }
+}
+```
+
+---
+
+## 7. Chuyển đổi Date sang String (DateFormat)
+
+Để chuyển đổi từ Date/LocalDate sang dạng chuỗi (để in ra) và ngược lại (từ chuỗi nhập vào parse thành Date), ta dùng các Formatters.
+
+| Class Ngày Tháng | Class định dạng tương ứng |
+|---|---|
+| `java.util.Date` (Cũ) | `java.text.SimpleDateFormat` |
+| `java.time.LocalDate` (Mới) | `java.time.format.DateTimeFormatter` |
+
+### 7.1 Code ví dụ
+
+```java
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
+public class DateFormatDemo {
+    public static void main(String[] args) {
+        
+        String pattern = "dd/MM/yyyy"; // Ký hiệu: d (ngày), M (tháng), y (năm)
+
+        System.out.println("===== 1. CHUYỂN ĐỔI VỚI DATE (CŨ) =====");
+        
+        // Tạo formatter
+        SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+        
+        // A. Date -> String (Format)
+        Date now = new Date();
+        String dateString = sdf.format(now);
+        System.out.println("Date to String: " + dateString);
+        
+        // B. String -> Date (Parse)
+        String inputStr = "25/12/2026";
+        try {
+            Date parsedDate = sdf.parse(inputStr); // Phải bắt ngoại lệ ParseException
+            System.out.println("String to Date: " + parsedDate);
+        } catch (ParseException e) {
+            System.out.println("Lỗi sai định dạng ngày tháng!");
+        }
+
+
+        System.out.println("\n===== 2. CHUYỂN ĐỔI VỚI LOCALDATE (MỚI) =====");
+        
+        // Tạo formatter (Thread-safe)
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+
+        // A. LocalDate -> String (Format)
+        LocalDate localToday = LocalDate.now();
+        String localStr = localToday.format(formatter);
+        System.out.println("LocalDate to String: " + localStr);
+
+        // B. String -> LocalDate (Parse)
+        // Không bắt buộc phải try-catch, nhưng có thể ném DateTimeParseException nếu sai
+        LocalDate parsedLocal = LocalDate.parse(inputStr, formatter);
+        System.out.println("String to LocalDate: " + parsedLocal);
+    }
+}
+```
+
+> 💡 **Bảng tham chiếu ký tự Format (Tương tự cho cả 2 cách):**
+> - `yyyy`: Năm (VD: 2026)
+> - `MM`: Tháng có số 0 (VD: 01..12)
+> - `dd`: Ngày có số 0 (VD: 01..31)
+> - `HH`: Giờ hệ 24h (00..23)
+> - `mm`: Phút (00..59)
+> - `ss`: Giây (00..59)
+> 
+> *Ví dụ Pattern giờ chuẩn quốc tế:* `"yyyy-MM-dd HH:mm:ss"`
+
+---
+
+> **📌 Kết thúc Phần 6: Data Structures & Các Kiểu Dữ Liệu**
 >
-> Phần tiếp theo: [Phần 6: Data Structures (Cấu trúc dữ liệu)](#phần-6-data-structures) *(sẽ được bổ sung)*
+> Phần tiếp theo: [Phần 7: Collections Framework](#phần-7-collections-framework) *(sẽ được bổ sung)*
+
