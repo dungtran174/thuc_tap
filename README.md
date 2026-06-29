@@ -8687,7 +8687,184 @@ public class ParallelDemo {
 
 ---
 
-> **📌 KẾT THÚC SERIES JAVA CORE TẠI ĐÂY**
+> **📌 Kết thúc Phần 11: Java 8 Stream API**
+
+---
+
+# Phần 12: Biểu thức chính quy (Regular Expression - Regex)
+
+## 📌 Mục lục
+1. [Khái niệm và Cú pháp (Syntax) Regex cơ bản](#1-khái-niệm-và-cú-pháp-syntax-regex-cơ-bản)
+2. [Tìm hiểu Lớp Pattern và Matcher](#2-tìm-hiểu-lớp-pattern-và-matcher)
+3. [Thực hành sử dụng Pattern & Matcher trong Java](#3-thực-hành-sử-dụng-pattern--matcher-trong-java)
+4. [Tài liệu thực hành Regex](#4-tài-liệu-thực-hành-regex)
+
+---
+
+## 1. Khái niệm và Cú pháp (Syntax) Regex cơ bản
+
+**Biểu thức chính quy (Regex - Regular Expression)** là một chuỗi ký tự đặc biệt dùng để mô tả một "mẫu" (pattern) tìm kiếm. Nó cực kỳ mạnh mẽ trong việc:
+- **Xác thực (Validation):** Kiểm tra xem Email, Số điện thoại, Mật khẩu người dùng nhập vào có đúng định dạng không.
+- **Tìm kiếm (Search) & Trích xuất (Extract):** Tìm tất cả các số điện thoại có trong một đoạn văn bản dài.
+- **Thay thế (Replace):** Che giấu các từ nhạy cảm trong đoạn chat.
+
+### Bảng các Syntax cơ bản nhất cần nhớ:
+
+#### Nhóm ký tự đại diện (Metacharacters)
+| Cú pháp | Ý nghĩa | Ví dụ khớp |
+|---|---|---|
+| `.` | Bất kỳ ký tự nào (trừ dấu xuống dòng) | `a.b` khớp `a b`, `a-b`, `a1b` |
+| `\d` | Một chữ số (Digit), tương đương `[0-9]` | `\d\d` khớp `01`, `99` |
+| `\D` | KHÔNG PHẢI là chữ số | `\D` khớp `a`, ` `, `@` |
+| `\w` | Chữ cái, số hoặc dấu gạch dưới (Word character) `[a-zA-Z0-9_]` | `\w` khớp `A`, `1`, `_` |
+| `\W` | KHÔNG PHẢI ký tự từ (Word character) | `\W` khớp `!`, `@`, khoảng trắng |
+| `\s` | Khoảng trắng (Space, tab, newline) | `\s` khớp ` ` |
+| `\S` | KHÔNG PHẢI khoảng trắng | `\S` khớp `a`, `1` |
+
+#### Nhóm tập hợp và Biên (Sets & Anchors)
+| Cú pháp | Ý nghĩa | Ví dụ khớp |
+|---|---|---|
+| `[abc]` | Một ký tự nằm trong ngoặc vuông (a hoặc b hoặc c) | `[abc]` khớp `a` |
+| `[^abc]` | Một ký tự KHÔNG nằm trong ngoặc (Phủ định) | `[^abc]` khớp `x`, `y` |
+| `[a-z]` | Một ký tự từ a đến z | `[a-z]` khớp `g` |
+| `^` | Bắt đầu chuỗi | `^Hello` khớp chuỗi bắt đầu bằng "Hello" |
+| `$` | Kết thúc chuỗi | `end$` khớp chuỗi kết thúc bằng "end" |
+
+#### Nhóm số lượng (Quantifiers)
+| Cú pháp | Ý nghĩa | Ví dụ khớp |
+|---|---|---|
+| `*` | Xuất hiện 0 hoặc nhiều lần | `A*` khớp ``, `A`, `AAAA` |
+| `+` | Xuất hiện 1 hoặc nhiều lần (Bắt buộc phải có) | `A+` khớp `A`, `AAA` |
+| `?` | Xuất hiện 0 hoặc 1 lần (Có hoặc không đều được) | `A?` khớp ``, `A` |
+| `{n}` | Xuất hiện chính xác n lần | `A{3}` khớp `AAA` |
+| `{n,}` | Xuất hiện từ n lần trở lên | `A{2,}` khớp `AA`, `AAA` |
+| `{n,m}`| Xuất hiện từ n đến m lần | `A{2,4}` khớp `AA`, `AAA`, `AAAA` |
+
+> ⚠️ **Lưu ý trong Java:** Vì dấu `\` trong chuỗi Java (String) là ký tự escape (ví dụ `\n`), nên khi viết regex trong chuỗi Java, bạn phải viết là `\\`. (Ví dụ: `\\d` thay vì `\d`).
+
+---
+
+## 2. Tìm hiểu Lớp Pattern và Matcher
+
+Trong Java (package `java.util.regex`), quy trình tiêu chuẩn để sử dụng Regex gồm 2 class chính:
+
+1. **`Pattern` (Khuôn mẫu):** Dùng để biên dịch chuỗi Regex thành một cỗ máy tìm kiếm. Việc biên dịch này tốn tài nguyên, nên ta thường biên dịch 1 lần rồi xài lại.
+   - Cú pháp: `Pattern p = Pattern.compile("regex");`
+2. **`Matcher` (Bộ khớp lệnh):** Đối tượng thực thi việc áp cái khuôn mẫu `Pattern` lên một chuỗi dữ liệu (String) cụ thể để tìm kiếm hoặc đối chiếu.
+   - Cú pháp: `Matcher m = p.matcher("Chuỗi cần kiểm tra");`
+
+### Các hàm quan trọng của Matcher:
+- `m.matches()`: Kiểm tra xem **TOÀN BỘ CHUỖI** có khớp hoàn toàn với Regex không (Dùng cho Validation).
+- `m.find()`: Quét qua chuỗi để tìm ra **XUYÊN SUỐT** các đoạn nhỏ khớp với Regex (Dùng để Trích xuất dữ liệu).
+- `m.group()`: Trả về phần dữ liệu vừa tìm thấy khi gọi hàm `find()`.
+
+---
+
+## 3. Thực hành sử dụng Pattern & Matcher trong Java
+
+### Ví dụ 1: Validate (Xác thực) định dạng Email và Số điện thoại
+
+```java
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+public class RegexValidationDemo {
+    public static void main(String[] args) {
+        // 1. Kiểm tra Số điện thoại Việt Nam (10 số, bắt đầu bằng 0)
+        // Regex: Bắt đầu ^, số 0, theo sau là 9 chữ số \d{9}, kết thúc $
+        String phoneRegex = "^0\\d{9}$";
+        Pattern phonePattern = Pattern.compile(phoneRegex);
+        
+        String phone1 = "0987654321"; // Hợp lệ
+        String phone2 = "9876543210"; // Sai (không có 0 đầu)
+        String phone3 = "0987abc321"; // Sai (chứa chữ)
+
+        System.out.println("Kiểm tra SĐT:");
+        System.out.println(phone1 + " hợp lệ? " + phonePattern.matcher(phone1).matches());
+        System.out.println(phone2 + " hợp lệ? " + phonePattern.matcher(phone2).matches());
+        
+        // 2. Kiểm tra Email
+        // Regex: [chữ/số/chấm] + @ + [chữ/số] + . + [chữ (2-4 ký tự)]
+        String emailRegex = "^[a-zA-Z0-9._]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}$";
+        Pattern emailPattern = Pattern.compile(emailRegex);
+        
+        String email1 = "test.user_1@gmail.com";
+        String email2 = "admin@domain"; // Sai (thiếu đuôi .com/.vn)
+        
+        System.out.println("\nKiểm tra Email:");
+        System.out.println(email1 + " hợp lệ? " + emailPattern.matcher(email1).matches());
+        System.out.println(email2 + " hợp lệ? " + emailPattern.matcher(email2).matches());
+    }
+}
+```
+
+### Ví dụ 2: Extract (Trích xuất) Dữ liệu từ một đoạn văn bản
+
+```java
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+public class RegexExtractDemo {
+    public static void main(String[] args) {
+        String content = "Xin chào, vui lòng liên hệ anh A qua số điện thoại 0912345678. " +
+                         "Hoặc gọi cho chị B số 0988777666 vào ngày mai. " +
+                         "Số hotline công ty: 19001560 (Không phải số cá nhân).";
+
+        // Regex tìm số điện thoại cá nhân (Bắt đầu bằng số 0, độ dài 10 hoặc 11 số)
+        // Dùng biên từ \b để đảm bảo nó là một từ độc lập (không bị dính vào chữ khác)
+        String regex = "\\b0\\d{9,10}\\b";
+        
+        // Bước 1: Biên dịch khuôn mẫu
+        Pattern pattern = Pattern.compile(regex);
+        
+        // Bước 2: Đưa văn bản vào máy quét Matcher
+        Matcher matcher = pattern.matcher(content);
+        
+        // Bước 3: Dùng vòng lặp while(matcher.find()) để quét từ đầu tới cuối văn bản
+        System.out.println("Các số điện thoại cá nhân tìm thấy trong đoạn văn:");
+        while (matcher.find()) {
+            // In ra chuỗi khớp (group) và vị trí bắt đầu (start)
+            System.out.println("- Số ĐT: " + matcher.group() + " (Nằm ở vị trí: " + matcher.start() + ")");
+        }
+    }
+}
+```
+
+### Phương thức gộp cực tiện lợi (Sử dụng trực tiếp trên String)
+Mặc dù dùng `Pattern` và `Matcher` giúp tối ưu hiệu năng (khi dùng lại nhiều lần), nhưng lớp `String` của Java cũng hỗ trợ sẵn các hàm cực kỳ tiện lợi để xử lý Regex ngay lập tức (bên dưới nó tự động tạo Pattern/Matcher cho bạn):
+```java
+String text = "Lập trình Java 8";
+
+// Kiểm tra khớp toàn chuỗi (Tương đương m.matches())
+boolean isMatch = text.matches(".*Java.*"); 
+
+// Tách chuỗi theo dấu phẩy HOẶC khoảng trắng
+String[] words = "Apple, Banana  Orange".split("[,\\s]+"); 
+
+// Thay thế tất cả các chữ số thành dấu *
+String hidden = "Mật khẩu là 123456".replaceAll("\\d", "*"); // "Mật khẩu là ******"
+```
+
+---
+
+## 4. Tài liệu thực hành Regex
+
+Học Regex không thể chỉ dựa vào lý thuyết vì các biểu thức có thể rất phức tạp. Cách tốt nhất để thành thạo là **thực hành gõ Regex trực tiếp** và nhìn thấy kết quả ngay lập tức (Visual learning).
+
+💡 **Trang web thực hành tốt nhất:**
+👉 **[RegexOne - Learn Regular Expressions with simple, interactive exercises.](https://regexone.com/)**
+
+**Tại sao nên học trên RegexOne?**
+- Có 15+ bài học tương tác đi từ số 0 (cơ bản nhất) đến phức tạp.
+- Đưa ra các bài toán thực tế (Ví dụ: Viết regex để trích xuất tên miền từ các chuỗi `https://www.google.com`).
+- Bạn gõ regex vào khung, web sẽ highlight chữ màu xanh ngay lập tức nếu bạn viết đúng quy luật.
+- Ngôn ngữ Regex độc lập với ngôn ngữ lập trình, học 1 lần dùng được cho cả Java, JavaScript, Python, C#...
+
+> 🛠️ **Công cụ kiểm tra (Tester):** Khi bạn viết Regex thực tế trong dự án, luôn luôn kiểm tra nó trước bằng trang web **[Regex101.com](https://regex101.com/)** để xem phân tích chi tiết cỗ máy Regex của bạn đang hoạt động/quét dữ liệu như thế nào trước khi copy vào code Java.
+
+---
+
+> **📌 KẾT THÚC SERIES LÝ THUYẾT JAVA CORE TẠI ĐÂY**
 > 
 > Bộ tài liệu này đã hệ thống lại một cách đầy đủ và chi tiết toàn bộ kiến thức về Ngôn ngữ Java (từ Cơ bản đến Nâng cao). Chúc bạn học tập và áp dụng thật hiệu quả trong công việc thực tế!
 
