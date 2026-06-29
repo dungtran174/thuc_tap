@@ -8985,11 +8985,172 @@ nohup java -Xms512m -Xmx1024m -Denv=prod -jar my-app.jar > app.log 2>&1 &
 
 ---
 
+> **📌 Kết thúc Phần 13: Triển khai Ứng dụng**
+
+---
+
+# Phần 14: Quy chuẩn code Java (Java Coding Conventions)
+
+## 📌 Mục lục
+1. [Tại sao cần phải có Coding Convention?](#1-tại-sao-cần-phải-có-coding-convention)
+2. [Quy tắc đặt tên (Naming Conventions)](#2-quy-tắc-đặt-tên-naming-conventions)
+3. [Các cách viết Comment (Bình luận) trong code](#3-các-cách-viết-comment-bình-luận-trong-code)
+4. [Viết tài liệu Javadoc chuyên nghiệp](#4-viết-tài-liệu-javadoc-chuyên-nghiệp)
+
+---
+
+## 1. Tại sao cần phải có Coding Convention?
+Trong một dự án thực tế, mã nguồn không chỉ do một người viết mà là công sức của cả một tập thể. 
+**Coding Convention (Quy chuẩn viết code)** là tập hợp các luật lệ chung giúp:
+- **Dễ đọc, dễ hiểu:** Ai cũng có thể đọc code của người khác dễ dàng như đọc code của chính mình.
+- **Dễ bảo trì:** Tránh những lỗi ngớ ngẩn do đặt tên biến gây nhầm lẫn.
+- **Chuyên nghiệp:** Thể hiện đẳng cấp của lập trình viên và chất lượng của dự án.
+
+---
+
+## 2. Quy tắc đặt tên (Naming Conventions)
+
+Java sử dụng 3 chuẩn đặt tên chính:
+- **PascalCase (Viết hoa chữ cái đầu mỗi từ):** `SinhVien`, `QuanLyNhanVien`
+- **camelCase (Lạc đà - Chữ cái đầu tiên viết thường, các chữ cái đầu của từ tiếp theo viết hoa):** `hoTen`, `layDanhSach`
+- **UPPER_SNAKE_CASE (Viết hoa toàn bộ, cách nhau bởi dấu gạch dưới):** `MAX_VALUE`, `DEFAULT_TIMEOUT`
+
+### Bảng tổng hợp Quy tắc:
+
+| Thành phần | Cú pháp sử dụng | Lưu ý (Best Practice) | Ví dụ Đúng | Ví dụ Sai |
+|---|---|---|---|---|
+| **Class (Lớp)** | **PascalCase** | Nên là một **Danh từ**. | `Customer`, `UserAccount` | `customer`, `user_account` |
+| **Interface** | **PascalCase** | Nên là Tính từ (kết thúc bằng `able`) hoặc Danh từ. | `Runnable`, `Serializable` | `runnable`, `Run` |
+| **Method (Hàm)** | **camelCase** | Nên bắt đầu bằng một **Động từ** (get, set, do, is). | `getName()`, `calculateSalary()` | `Salary()`, `Get_name()` |
+| **Biến (Variable)** | **camelCase** | Tên phải có ý nghĩa, tránh viết tắt quá ngắn (trừ biến chạy i, j trong vòng lặp). | `studentName`, `totalPrice` | `sn`, `tong_tien` |
+| **Hằng số (Constant)** | **UPPER_SNAKE_CASE** | Phải kết hợp từ khóa `static final`. | `MAX_AGE`, `PI` | `maxAge`, `Max_Age` |
+| **Gói (Package)** | **lowercase (Chữ thường)** | Thường sử dụng tên miền công ty đảo ngược. | `com.company.project` | `Com.Company.Project` |
+
+### Ví dụ code chuẩn:
+```java
+package com.company.entity; // Tên package viết thường toàn bộ
+
+// Tên Class là Danh từ, viết theo PascalCase
+public class BankAccount {
+
+    // Hằng số: static final, UPPER_SNAKE_CASE
+    public static final int MAX_WITHDRAW_LIMIT = 5000000;
+    
+    // Biến instance: camelCase
+    private String accountName;
+    private double currentBalance;
+
+    // Tên hàm là Động từ, camelCase
+    public void withdrawMoney(double amount) {
+        // Biến cục bộ: camelCase
+        double fee = 5000.0;
+        this.currentBalance -= (amount + fee);
+    }
+}
+```
+
+---
+
+## 3. Các cách viết Comment (Bình luận) trong code
+
+Comment dùng để giải thích MỤC ĐÍCH của đoạn code (Tại sao lại viết như vậy?), chứ không phải dịch đoạn code đó ra tiếng Việt.
+
+### 3.1 Comment một dòng (Single-line Comment)
+Sử dụng kí hiệu `//`. Dành cho các dòng giải thích ngắn gọn, thường đặt ở trên đoạn code cần giải thích.
+```java
+// Kiểm tra nếu người dùng chưa đủ 18 tuổi thì từ chối truy cập
+if (age < 18) {
+    return false; 
+}
+```
+
+### 3.2 Comment nhiều dòng (Multi-line / Block Comment)
+Sử dụng kí hiệu `/* ... */`. Dành cho việc giải thích các đoạn logic phức tạp hoặc tạm thời "vô hiệu hóa" (comment out) một đoạn code lớn.
+```java
+/*
+ * Thuật toán tính lãi suất kép:
+ * 1. Tính lãi suất tháng = Lãi suất năm / 12
+ * 2. Cộng dồn vào vốn gốc cho các kỳ tiếp theo
+ * 3. Trừ đi chi phí bảo trì tài khoản (nếu có)
+ */
+public double calculateCompoundInterest(...) { ... }
+```
+
+---
+
+## 4. Viết tài liệu Javadoc chuyên nghiệp
+
+**Javadoc** là một loại comment đặc biệt trong Java (bắt đầu bằng `/**` và kết thúc bằng `*/`).
+Khác với comment thông thường chỉ để người lập trình đọc trong file mã nguồn, Javadoc sẽ được Trình biên dịch (Compiler) hoặc các IDE trích xuất ra thành một **Trang web Tài liệu HTML** để chia sẻ cho người khác đọc (Giống như đọc API Docs).
+
+### 4.1 Quy tắc đặt Javadoc
+- Phải được đặt **NGAY TRÊN** phần khai báo của Class, Interface hoặc Method.
+- Cấu trúc chung gồm 2 phần:
+  1. Dòng mô tả ngắn gọn về chức năng.
+  2. Các thẻ (Tags) đặc biệt để mô tả chi tiết tham số, kết quả, v.v.
+
+### 4.2 Các thẻ (Tags) phổ biến nhất
+| Thẻ (Tag) | Nơi sử dụng | Ý nghĩa |
+|---|---|---|
+| `@author` | Class / Interface | Tên người viết class này. |
+| `@version` | Class / Interface | Phiên bản hiện tại của class. |
+| `@since` | Class / Interface | Tính năng này xuất hiện từ phiên bản JDK/App nào. |
+| `@param` | Method (Hàm) | Mô tả mục đích của tham số truyền vào hàm. |
+| `@return` | Method (Hàm) | Mô tả ý nghĩa của giá trị trả về (Nếu hàm void thì không cần). |
+| `@throws` / `@exception` | Method (Hàm) | Mô tả trường hợp nào thì hàm sẽ ném ra lỗi (Exception). |
+| `@deprecated` | Class / Method | Cảnh báo: Hàm này đã CŨ và sắp bị xóa, khuyên lập trình viên không nên dùng nữa. |
+
+### 4.3 Ví dụ Javadoc thực tế chuẩn mực
+
+```java
+/**
+ * Lớp cung cấp các tiện ích xử lý chuỗi và mật khẩu.
+ * Không cho phép khởi tạo đối tượng từ lớp này (Utility class).
+ * 
+ * @author Nguyen Van A
+ * @version 1.2.0
+ * @since 2026-06
+ */
+public class SecurityUtils {
+
+    // Private constructor (Chặn khởi tạo)
+    private SecurityUtils() {}
+
+    /**
+     * Mã hóa mật khẩu người dùng sử dụng thuật toán băm SHA-256.
+     * <p>
+     * Lưu ý: Không lưu trực tiếp mật khẩu gốc vào cơ sở dữ liệu.
+     * Hãy gọi hàm này trước khi lưu.
+     * </p>
+     * 
+     * @param rawPassword Mật khẩu thô do người dùng nhập (không được null)
+     * @param salt        Chuỗi muối ngẫu nhiên để tăng độ khó giải mã
+     * @return            Chuỗi mật khẩu đã được mã hóa dạng HEX
+     * @throws IllegalArgumentException Nếu mật khẩu truyền vào là rỗng hoặc null
+     * @deprecated Hàm này đã cũ, hãy chuyển sang dùng hàm {@link #hashBcrypt(String)} để bảo mật cao hơn.
+     */
+    @Deprecated
+    public static String hashPassword(String rawPassword, String salt) throws IllegalArgumentException {
+        if (rawPassword == null || rawPassword.trim().isEmpty()) {
+            throw new IllegalArgumentException("Mật khẩu không được để trống");
+        }
+        
+        // Logic mã hóa ở đây...
+        return "hashed_string_123456";
+    }
+}
+```
+
+> 💡 **Mẹo:** Trong IntelliJ IDEA hoặc Eclipse, bạn chỉ cần gõ `/**` ngay phía trên một tên Hàm rồi bấm `Enter`, IDE sẽ tự động sinh ra sẵn các thẻ `@param`, `@return`... tương ứng với chữ ký của hàm đó để bạn điền vào!
+
+---
+
 > **📌 KẾT THÚC SERIES LÝ THUYẾT JAVA CORE TẠI ĐÂY**
 > 
-> Bộ tài liệu này đã hệ thống lại một cách đầy đủ và chi tiết toàn bộ kiến thức về Ngôn ngữ Java. Từ Cơ bản (Lập trình, OOP, Exception, File), Trung cấp (Collections, Đa luồng), Java 8 (Lambda, Stream) cho tới Kiến thức thực chiến (Regex, Deploy ứng dụng).
+> Bộ tài liệu này đã hệ thống lại một cách đầy đủ và chi tiết toàn bộ kiến thức về Ngôn ngữ Java. Từ Cơ bản (Lập trình, OOP, Exception, File), Trung cấp (Collections, Đa luồng), Java 8 (Lambda, Stream) cho tới Kiến thức thực chiến (Regex, Deploy ứng dụng, Coding Convention).
 > 
-> Chúc bạn ôn tập tốt và vững vàng nền tảng để tiến tới các Framework lớn như Spring Boot!
+> Chúc bạn ôn tập tốt và vững vàng nền tảng để tiến tới các Framework lớn!
+
 
 
 
