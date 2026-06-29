@@ -7720,6 +7720,322 @@ public class ComparableDemo {
 ---
 
 > **📌 Kết thúc Phần 7: Collections Framework**
+
+---
+
+# Phần 8: Lập trình Đa luồng (Multi-threading)
+
+## 📌 Mục lục
+1. [Tại sao cần lập trình đa luồng?](#1-tại-sao-cần-lập-trình-đa-luồng)
+2. [Máy 1 CPU chạy đa luồng có nhanh hơn không? Số luồng bao nhiêu là đủ?](#2-máy-1-cpu-chạy-đa-luồng-có-nhanh-hơn-không-số-luồng-bao-nhiêu-là-đủ)
+3. [Đa luồng (Multi-threading) khác gì Đa tiến trình (Multi-processing)?](#3-đa-luồng-multi-threading-khác-gì-đa-tiến-trình-multi-processing)
+4. [Cách tạo luồng bằng Thread và Runnable](#4-cách-tạo-luồng-bằng-thread-và-runnable)
+5. [Quản lý nhiều luồng bằng Executor (Thread Pool)](#5-quản-lý-nhiều-luồng-bằng-executor-thread-pool)
+6. [Executor: Lập lịch chạy (ScheduledExecutorService)](#6-executor-lập-lịch-chạy-scheduledexecutorservice)
+7. [Sử dụng Callable và lấy kết quả với Future](#7-sử-dụng-callable-và-lấy-kết-quả-với-future)
+8. [Synchronized, Locking và Atomic](#8-synchronized-locking-và-atomic)
+9. [Collection Thread-safe và ConcurrentHashMap](#9-collection-thread-safe-và-concurrenthashmap)
+
+---
+
+## 1. Tại sao cần lập trình đa luồng?
+Trong lập trình đồng bộ (tuần tự), dòng lệnh 2 phải đợi dòng lệnh 1 chạy xong. Nếu dòng lệnh 1 là một tác vụ rất tốn thời gian (như gọi API, tải file, đọc database), toàn bộ ứng dụng sẽ bị **"đứng" (treo UI)**.
+
+Lập trình đa luồng giúp ứng dụng **thực hiện nhiều công việc cùng một lúc**. 
+*Ví dụ:* Trình duyệt web vừa tải xuống file (Luồng 1), vừa cho phép bạn cuộn trang đọc báo (Luồng 2) và vừa phát nhạc (Luồng 3).
+
+## 2. Máy 1 CPU chạy đa luồng có nhanh hơn không? Số luồng bao nhiêu là đủ?
+### 2.1 Máy 1 CPU (1 Core) chạy đa luồng có nhanh hơn không?
+**Câu trả lời:** Phụ thuộc vào loại công việc (Tác vụ):
+- **Tác vụ tính toán (CPU-bound)** (như nén video, tính toán ma trận): **KHÔNG NHANH HƠN**. Thậm chí còn chậm đi vì CPU phải tốn thời gian chuyển đổi ngữ cảnh (Context Switching) giữa các luồng.
+- **Tác vụ chờ đợi (I/O-bound)** (như đọc/ghi file, gọi mạng, chờ Database): **NHANH HƠN RẤT NHIỀU**. Khi Luồng 1 phải dừng lại để "chờ" mạng tải dữ liệu về (CPU rảnh rỗi), CPU sẽ lập tức chuyển sang chạy Luồng 2, giúp tận dụng tối đa thời gian rảnh của CPU.
+
+### 2.2 Sử dụng bao nhiêu luồng là đủ?
+Công thức tối ưu phổ biến: `Số luồng tối ưu = Số lượng Core CPU * (1 + Thời gian chờ / Thời gian tính toán)`
+- Với tác vụ **CPU-bound**: Số luồng = Số Core CPU. (Hoặc `Core + 1`).
+- Với tác vụ **I/O-bound**: Số luồng = Hàng chục hoặc hàng trăm luồng (Tùy vào thời gian luồng phải ngủ chờ I/O dài hay ngắn).
+
+## 3. Đa luồng (Multi-threading) khác gì Đa tiến trình (Multi-processing)?
+
+| Tiêu chí | Process (Tiến trình) | Thread (Luồng) |
+|---|---|---|
+| **Khái niệm** | Là một chương trình đang chạy (Ví dụ: 1 phần mềm Chrome đang mở). | Là 1 đơn vị thực thi nhỏ nhất nằm **bên trong** một Process. |
+| **Không gian bộ nhớ** | Mỗi tiến trình có một vùng nhớ **ĐỘC LẬP**. (App A không thể đọc biến của App B). | Các luồng trong cùng 1 tiến trình **CHIA SẺ** chung vùng nhớ (Heap) của tiến trình đó. |
+| **Tốc độ tạo/hủy** | Chậm, tốn tài nguyên hệ điều hành. | Rất nhanh (Được gọi là Lightweight process). |
+| **Giao tiếp** | Phức tạp (IPC - Interprocess Communication). | Cực kỳ dễ dàng (Thông qua các biến dùng chung). |
+| **Sự cố** | Tiến trình A chết không ảnh hưởng tới Tiến trình B. | Một luồng bị lỗi văng Exception chưa được catch có thể làm chết toàn bộ Tiến trình (Tắt luôn App). |
+
+---
+
+## 4. Cách tạo luồng bằng Thread và Runnable
+
+Có 2 cách truyền thống để tạo luồng trong Java. Ngày nay, **Cách 2 (Runnable)** được dùng tới 99% vì Java không cho đa kế thừa, nếu `extends Thread` thì sẽ không thể extends class khác được nữa.
+
+```java
+// CÁCH 1: Kế thừa class Thread
+class MyThread extends Thread {
+    @Override
+    public void run() {
+        System.out.println("Luồng 1 đang chạy: " + Thread.currentThread().getName());
+    }
+}
+
+// CÁCH 2: Implements interface Runnable (KHUYÊN DÙNG)
+class MyRunnable implements Runnable {
+    @Override
+    public void run() {
+        System.out.println("Luồng 2 đang chạy: " + Thread.currentThread().getName());
+    }
+}
+
+public class ThreadDemo {
+    public static void main(String[] args) {
+        // Khởi chạy Cách 1
+        MyThread t1 = new MyThread();
+        t1.start(); // Bắt buộc gọi start(), NẾU GỌI run() THÌ CHỈ LÀ HÀM BÌNH THƯỜNG
+
+        // Khởi chạy Cách 2
+        Thread t2 = new Thread(new MyRunnable());
+        t2.start();
+
+        // Cách 2.1: Dùng Lambda (Cực kỳ ngắn gọn)
+        Thread t3 = new Thread(() -> {
+            System.out.println("Luồng 3 đang chạy: " + Thread.currentThread().getName());
+        });
+        t3.start();
+        
+        System.out.println("Luồng chính (Main) đã kết thúc lệnh khởi tạo.");
+    }
+}
+```
+
+---
+
+## 5. Quản lý nhiều luồng bằng Executor (Thread Pool)
+
+**Vấn đề:** Nếu ta có 10,000 công việc, tạo ra 10,000 cái `new Thread()` sẽ làm sập RAM và cháy CPU (Vì chi phí tạo Thread rất tốn kém).
+**Giải pháp:** Dùng **Thread Pool (Hồ chứa luồng)** thông qua `ExecutorService`. Ta chỉ tạo tối đa (ví dụ 10 luồng). 10,000 công việc sẽ được bỏ vào 1 hàng đợi (Queue). 10 luồng này sẽ lấy lần lượt từng việc ra làm. Ai làm xong không bị hủy mà quay lại lấy việc tiếp theo.
+
+```java
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+public class ThreadPoolDemo {
+    public static void main(String[] args) {
+        // Tạo Thread Pool với số luồng TỐI ĐA là 3
+        ExecutorService executor = Executors.newFixedThreadPool(3);
+
+        // Ném vào hồ 10 công việc
+        for (int i = 1; i <= 10; i++) {
+            final int taskId = i;
+            executor.submit(() -> {
+                System.out.println("Đang xử lý Task " + taskId + " bởi " + Thread.currentThread().getName());
+                try {
+                    Thread.sleep(1000); // Giả lập việc nặng mất 1s
+                } catch (InterruptedException e) { }
+            });
+        }
+
+        // Đóng Executor (Không nhận thêm việc, chờ làm xong việc cũ rồi tắt các luồng)
+        executor.shutdown(); 
+        System.out.println("Main thread đã giao xong 10 công việc.");
+        
+        // Kết quả chạy: Luôn luôn chỉ có TỐI ĐA 3 luồng (pool-1-thread-1,2,3) chạy cùng lúc.
+    }
+}
+```
+
+---
+
+## 6. Executor: Lập lịch chạy (ScheduledExecutorService)
+
+Dùng để chạy các tác vụ có tính định kỳ (Giống hàm `setInterval` hay `setTimeout` trong JS).
+
+```java
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+public class ScheduledDemo {
+    public static void main(String[] args) {
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
+        // 1. Chạy 1 lần duy nhất sau X giây trễ (VD: Sau 3 giây)
+        scheduler.schedule(() -> {
+            System.out.println("Tin nhắn nổ chậm (Sau 3s)");
+        }, 3, TimeUnit.SECONDS);
+
+        // 2. Lập lịch chạy ĐỊNH KỲ (Lặp đi lặp lại)
+        // Thông số: Task, Trễ_ban_đầu, Khoảng_cách_lặp, Đơn_vị_thời_gian
+        scheduler.scheduleAtFixedRate(() -> {
+            System.out.println("Ping... Cứ mỗi 5s chạy một lần");
+        }, 1, 5, TimeUnit.SECONDS);
+        
+        // Lưu ý: Đừng gọi scheduler.shutdown() ngay nếu muốn nó chạy lặp lại mãi mãi.
+    }
+}
+```
+
+---
+
+## 7. Sử dụng Callable và lấy kết quả với Future
+
+- `Runnable` không có giá trị trả về (`void`).
+- `Callable<T>` dùng cho đa luồng nhưng **CÓ THỂ TRẢ VỀ KẾT QUẢ** kiểu `T` và **CÓ THỂ NÉM EXCEPTION**.
+- `Future` là cái vỏ hộp, dùng để chứa kết quả của Callable trong tương lai (vì khi luồng khác đang chạy, ta chưa có kết quả ngay).
+
+```java
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.*;
+
+public class CallableDemo {
+    public static void main(String[] args) {
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        
+        // List chứa các "Tương lai"
+        List<Future<Integer>> results = new ArrayList<>();
+
+        for (int i = 1; i <= 3; i++) {
+            final int number = i * 10;
+            
+            // Khai báo Callable trả về số Integer
+            Callable<Integer> task = () -> {
+                System.out.println("Tính toán " + number + " (" + Thread.currentThread().getName() + ")");
+                Thread.sleep(2000); // Giả lập tính toán mất 2s
+                return number * 2;
+            };
+            
+            // Gửi Callable vào Executor, nó trả về 1 cái vỏ Future ngay lập tức
+            Future<Integer> future = executor.submit(task);
+            results.add(future); 
+        }
+
+        System.out.println("Đã gửi hết task. Đi làm việc khác...");
+
+        // Chờ và LẤY KẾT QUẢ từ nhiều luồng
+        int totalSum = 0;
+        for (Future<Integer> future : results) {
+            try {
+                // Hàm get() SẼ BỊ CHẶN (BLOCK) cho đến khi luồng đó xử lý xong.
+                int value = future.get(); 
+                System.out.println("Lấy được kết quả: " + value);
+                totalSum += value;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        
+        System.out.println("Tổng tất cả các luồng trả về là: " + totalSum);
+        executor.shutdown();
+    }
+}
+```
+
+---
+
+## 8. Synchronized, Locking và Atomic
+
+**Tình huống (Race Condition - Tình trạng tương tranh):** Nếu 2 luồng cùng lúc đọc và tăng biến `count` lên 1. Lẽ ra biến phải là 2, nhưng do đọc cùng lúc `count=0`, cả 2 cùng gán `count = 0 + 1 = 1`. Kết quả bị mất mát dữ liệu (Count = 1).
+
+### 8.1 Từ khóa `synchronized` (Khóa đồng bộ)
+Đảm bảo tại 1 thời điểm, **chỉ có duy nhất 1 luồng** được phép chui vào hàm/khối code này. Luồng khác muốn vào phải đứng xếp hàng chờ luồng trước đi ra.
+
+```java
+class Counter {
+    private int count = 0;
+
+    // Đặt synchronized vào hàm
+    public synchronized void increment() {
+        count++; 
+    }
+    
+    public int getCount() { return count; }
+}
+```
+
+### 8.2 Lock (`ReentrantLock`)
+Linh hoạt hơn `synchronized`. Cho phép Khóa (`lock()`) và Mở khóa (`unlock()`) ở các vị trí tùy ý. Tuy nhiên luôn phải nhớ `unlock()` trong khối `finally` để tránh Deadlock (Chết kẹt).
+
+```java
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+class LockCounter {
+    private int count = 0;
+    private Lock lock = new ReentrantLock();
+
+    public void increment() {
+        lock.lock(); // Xin chìa khóa
+        try {
+            count++;
+        } finally {
+            lock.unlock(); // CHẮC CHẮN phải trả lại chìa khóa dù có Exception
+        }
+    }
+}
+```
+
+### 8.3 Atomic Variables (Biến nguyên tử)
+Là cách TỐT NHẤT và NHANH NHẤT để đếm số an toàn trong đa luồng. Bên dưới nó dùng thuật toán **CAS (Compare-And-Swap)** của CPU phần cứng chứ không cần cấp phát/chờ chìa khóa như khóa Lock (được gọi là Khóa không khóa - Lock-free).
+
+```java
+import java.util.concurrent.atomic.AtomicInteger;
+
+class AtomicCounter {
+    // Khai báo biến nguyên tử
+    private AtomicInteger count = new AtomicInteger(0);
+
+    public void increment() {
+        count.incrementAndGet(); // Tương đương ++count nhưng thread-safe 100%
+    }
+}
+```
+
+---
+
+## 9. Collection Thread-safe và ConcurrentHashMap
+
+Các Collection ở Phần 7 như `ArrayList`, `HashMap`, `HashSet` **đều KHÔNG an toàn** trong môi trường Đa luồng (Not Thread-Safe). Nếu nhiều luồng cùng thêm sửa xóa, nó sẽ văng `ConcurrentModificationException` hoặc lỗi cấu trúc (Mất node, lặp vô tận).
+
+### Giải pháp 1: Gói nó vào hàm đồng bộ (Chậm)
+Dùng `Collections.synchronizedList()` hoặc `Collections.synchronizedMap()`.
+- **Nhược điểm:** Hiệu năng rất tồi, vì nó khóa TOÀN BỘ cái danh sách. Dù 1 người ghi ở đầu, người ghi ở cuối cũng phải đứng đợi nhau.
+
+### Giải pháp 2: Sử dụng `java.util.concurrent` (Cực Nhanh)
+Java cung cấp bộ sưu tập được thiết kế riêng cho Đa luồng: `CopyOnWriteArrayList` và `ConcurrentHashMap`.
+
+**ConcurrentHashMap:**
+Được mệnh danh là siêu sao trong giới Collection. 
+Thay vì khóa toàn bộ Map, nó sử dụng kỹ thuật **Lock Striping** (Khóa theo phân đoạn/bucket). 
+- Nghĩa là: Nếu có 16 cái ngăn kéo (buckets), và Luồng A đang ghi vào ngăn kéo số 1, thì Khóa của ngăn 1 bị đóng lại. Tuy nhiên, Luồng B hoàn toàn có thể cùng lúc ghi vào ngăn kéo số 2 mà không phải chờ đợi Luồng A.
+- Đặc biệt, thao tác Đọc (`get`) hầu như không bị Lock.
+
+```java
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
+
+public class ConcurrentMapDemo {
+    public static void main(String[] args) {
+        // Sử dụng thay cho HashMap khi có nhiều luồng
+        Map<String, Integer> map = new ConcurrentHashMap<>();
+        
+        map.put("A", 100);
+        map.put("B", 200);
+        
+        // Phương thức cực kỳ tiện lợi: putIfAbsent (Thêm nếu chưa tồn tại)
+        // Hàm này chạy an toàn tuyệt đối trong đa luồng mà không sợ đè giá trị
+        map.putIfAbsent("A", 999); // Sẽ KHÔNG thêm vì A đã có rồi
+        
+        System.out.println(map.get("A")); // Vẫn là 100
+    }
+}
+```
+
+---
+
+> **📌 Kết thúc Phần 8: Lập trình Đa luồng (Multi-threading)**
 >
-> Phần tiếp theo: [Phần 8: Lập trình Đa luồng (Multi-threading)](#phần-8-lập-trình-đa-luồng) *(sẽ được bổ sung)*
+> Phần tiếp theo: [Phần 9: Java 8 Features (Lambda, Stream API)](#phần-9-java-8-features) *(sẽ được bổ sung)*
+
 
