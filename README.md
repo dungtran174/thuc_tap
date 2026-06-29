@@ -881,5 +881,2131 @@ Nhờ JVM, nhiều ngôn ngữ khác cũng có thể biên dịch thành bytecod
 ---
 
 > **📌 Kết thúc Phần 1: Cấu Trúc Máy Tính Căn Bản**
+
+---
+
+# Phần 2: Lập Trình Cơ Bản (Java)
+
+## 📌 Mục lục
+
+1. [Khai báo biến](#1-khai-báo-biến)
+2. [Kiểu dữ liệu](#2-kiểu-dữ-liệu)
+3. [Giá trị thập phân của int, long](#3-giá-trị-thập-phân-của-int-long)
+4. [Sự khác nhau giữa double và float](#4-sự-khác-nhau-giữa-double-và-float)
+5. [Cộng 100 lần số 0.2f và kiểm tra kết quả](#5-cộng-100-lần-số-02f-và-kiểm-tra-kết-quả)
+6. [Lệnh rẽ nhánh (if, switch)](#6-lệnh-rẽ-nhánh-if-switch)
+7. [Lệnh lặp (for, while, do-while, foreach)](#7-lệnh-lặp-for-while-do-while-foreach)
+8. [Chuyển đổi hệ thập phân, nhị phân, hexa](#8-chuyển-đổi-hệ-thập-phân-nhị-phân-hexa)
+9. [Toán tử dịch bit, AND/OR bit, so sánh & và &&](#9-toán-tử-dịch-bit-andor-bit-so-sánh--và-)
+10. [Viết và sử dụng hàm, đệ quy, khử đệ quy](#10-viết-và-sử-dụng-hàm-đệ-quy-khử-đệ-quy)
+11. [Các ký tự chuỗi đặc biệt](#11-các-ký-tự-chuỗi-đặc-biệt)
+12. [Cách xử lý dữ liệu tiền tệ bằng số nguyên](#12-cách-xử-lý-dữ-liệu-tiền-tệ-bằng-số-nguyên)
+13. [Lập trình với mảng](#13-lập-trình-với-mảng)
+
+---
+
+## 1. Khai báo biến
+
+### 1.1 Biến là gì?
+
+**Biến (Variable)** là một **vùng nhớ được đặt tên** dùng để lưu trữ dữ liệu trong chương trình. Giá trị của biến có thể thay đổi trong quá trình chạy.
+
+```
+Bộ nhớ RAM:
+┌─────────────┬─────────────┬─────────────┬─────────────┐
+│ Địa chỉ:   │ Địa chỉ:   │ Địa chỉ:   │ Địa chỉ:   │
+│ 0x001       │ 0x002       │ 0x003       │ 0x004       │
+│             │             │             │             │
+│ Tên: age    │ Tên: name   │ Tên: score  │   (trống)   │
+│ Giá trị: 22 │ Giá trị:    │ Giá trị:    │             │
+│ Kiểu: int   │ "Dung"      │ 9.5         │             │
+│ (4 bytes)   │ Kiểu:String │ Kiểu:double │             │
+│             │             │ (8 bytes)   │             │
+└─────────────┴─────────────┴─────────────┴─────────────┘
+```
+
+### 1.2 Cú pháp khai báo biến trong Java
+
+```java
+// Cú pháp: <kiểu_dữ_liệu> <tên_biến>;
+// Hoặc:    <kiểu_dữ_liệu> <tên_biến> = <giá_trị>;
+
+public class VariableDemo {
+    public static void main(String[] args) {
+        // --- 1. Khai báo rồi gán giá trị sau ---
+        int age;            // Khai báo biến kiểu int
+        age = 22;           // Gán giá trị
+
+        // --- 2. Khai báo và gán giá trị cùng lúc ---
+        String name = "Dung";
+        double score = 9.5;
+        boolean isStudent = true;
+        char grade = 'A';
+
+        // --- 3. Khai báo nhiều biến cùng kiểu ---
+        int x = 1, y = 2, z = 3;
+
+        // --- 4. Hằng số (constant) - không thể thay đổi giá trị ---
+        final double PI = 3.14159265358979;
+        // PI = 3.14; // ❌ LỖI! Không thể gán lại giá trị cho biến final
+
+        // --- In ra giá trị ---
+        System.out.println("Tên: " + name);       // Tên: Dung
+        System.out.println("Tuổi: " + age);        // Tuổi: 22
+        System.out.println("Điểm: " + score);      // Điểm: 9.5
+        System.out.println("Sinh viên: " + isStudent); // Sinh viên: true
+        System.out.println("Xếp loại: " + grade);  // Xếp loại: A
+        System.out.println("PI = " + PI);           // PI = 3.14159265358979
+    }
+}
+```
+
+### 1.3 Quy tắc đặt tên biến
+
+| Quy tắc | Đúng ✅ | Sai ❌ | Lý do |
+|---|---|---|---|
+| Bắt đầu bằng chữ cái, `_`, hoặc `$` | `age`, `_count`, `$price` | `1name`, `@value` | Không bắt đầu bằng số hoặc ký tự đặc biệt khác |
+| Không dùng từ khóa Java | `myClass`, `score` | `class`, `int`, `static` | Đây là từ khóa dành riêng |
+| Phân biệt hoa/thường | `name` ≠ `Name` ≠ `NAME` | | Java case-sensitive |
+| Quy ước **camelCase** | `studentName`, `totalScore` | `student_name`, `StudentName` | Convention Java cho biến và hàm |
+| Tên có ý nghĩa | `studentAge`, `maxRetry` | `a`, `x1`, `temp123` | Dễ đọc, dễ hiểu |
+
+### 1.4 Phạm vi biến (Variable Scope)
+
+```java
+public class ScopeDemo {
+    // Biến instance (thuộc tính của đối tượng)
+    int instanceVar = 10;       // Tồn tại khi đối tượng tồn tại
+
+    // Biến static (biến lớp)
+    static int classVar = 20;   // Tồn tại khi class được load
+
+    public void myMethod() {
+        // Biến cục bộ (local variable)
+        int localVar = 30;      // Chỉ tồn tại trong method này
+
+        if (true) {
+            // Biến block
+            int blockVar = 40;  // Chỉ tồn tại trong khối if này
+        }
+        // System.out.println(blockVar); // ❌ LỖI! blockVar không tồn tại ở đây
+    }
+}
+```
+
+```
+Phạm vi biến:
+┌────────────────────────────────── Class ──────────────────────────────┐
+│  classVar (static) - sống khi class được load                        │
+│  instanceVar - sống khi đối tượng tồn tại                           │
+│  ┌──────────────────── Method ────────────────────┐                  │
+│  │  localVar - sống trong method                  │                  │
+│  │  ┌──────────── Block (if/for) ───────────┐     │                  │
+│  │  │  blockVar - sống trong block           │     │                  │
+│  │  └───────────────────────────────────────┘     │                  │
+│  └────────────────────────────────────────────────┘                  │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 2. Kiểu dữ liệu
+
+### 2.1 Tổng quan kiểu dữ liệu trong Java
+
+Java có **2 nhóm kiểu dữ liệu**:
+
+```
+Kiểu dữ liệu Java
+├── Kiểu nguyên thủy (Primitive) - 8 kiểu
+│   ├── Số nguyên: byte, short, int, long
+│   ├── Số thực: float, double
+│   ├── Ký tự: char
+│   └── Logic: boolean
+│
+└── Kiểu tham chiếu (Reference)
+    ├── String
+    ├── Array
+    ├── Class / Object
+    └── Interface
+```
+
+### 2.2 Bảng chi tiết 8 kiểu nguyên thủy
+
+| Kiểu | Kích thước | Giá trị min | Giá trị max | Giá trị mặc định | Ví dụ |
+|---|---|---|---|---|---|
+| `byte` | 1 byte (8 bit) | -128 | 127 | 0 | `byte b = 100;` |
+| `short` | 2 bytes (16 bit) | -32,768 | 32,767 | 0 | `short s = 30000;` |
+| `int` | 4 bytes (32 bit) | -2,147,483,648 | 2,147,483,647 | 0 | `int i = 100000;` |
+| `long` | 8 bytes (64 bit) | -9,223,372,036,854,775,808 | 9,223,372,036,854,775,807 | 0L | `long l = 100000L;` |
+| `float` | 4 bytes (32 bit) | ~1.4E-45 | ~3.4E+38 | 0.0f | `float f = 3.14f;` |
+| `double` | 8 bytes (64 bit) | ~4.9E-324 | ~1.8E+308 | 0.0d | `double d = 3.14;` |
+| `char` | 2 bytes (16 bit) | '\u0000' (0) | '\uffff' (65,535) | '\u0000' | `char c = 'A';` |
+| `boolean` | ~1 bit* | false | true | false | `boolean b = true;` |
+
+> \* JVM thường dùng 1 byte cho boolean trong thực tế.
+
+### 2.3 Code ví dụ
+
+```java
+public class DataTypeDemo {
+    public static void main(String[] args) {
+        // ===== SỐ NGUYÊN =====
+        byte  myByte  = 127;          // -128 đến 127
+        short myShort = 32000;        // -32,768 đến 32,767
+        int   myInt   = 2_000_000_000; // Dùng _ để dễ đọc (Java 7+)
+        long  myLong  = 9_000_000_000L; // Phải có hậu tố 'L'
+
+        // ===== SỐ THỰC =====
+        float  myFloat  = 3.14f;      // Phải có hậu tố 'f'
+        double myDouble = 3.141592653589793; // Mặc định là double
+
+        // ===== KÝ TỰ =====
+        char myChar   = 'A';          // Một ký tự Unicode
+        char charNum  = 65;           // Cũng là 'A' (mã ASCII)
+        char charUni  = '\u0041';     // Cũng là 'A' (Unicode)
+
+        // ===== LOGIC =====
+        boolean isJavaFun = true;
+        boolean isFishTasty = false;
+
+        // ===== KIỂU THAM CHIẾU =====
+        String greeting = "Xin chào!"; // Chuỗi ký tự
+
+        // In ra thông tin
+        System.out.println("byte:    " + myByte);      // 127
+        System.out.println("short:   " + myShort);      // 32000
+        System.out.println("int:     " + myInt);         // 2000000000
+        System.out.println("long:    " + myLong);        // 9000000000
+        System.out.println("float:   " + myFloat);       // 3.14
+        System.out.println("double:  " + myDouble);      // 3.141592653589793
+        System.out.println("char:    " + myChar);         // A
+        System.out.println("boolean: " + isJavaFun);      // true
+        System.out.println("String:  " + greeting);       // Xin chào!
+
+        // Kích thước của từng kiểu
+        System.out.println("\n--- Kích thước (bytes) ---");
+        System.out.println("byte:    " + Byte.BYTES);     // 1
+        System.out.println("short:   " + Short.BYTES);    // 2
+        System.out.println("int:     " + Integer.BYTES);  // 4
+        System.out.println("long:    " + Long.BYTES);     // 8
+        System.out.println("float:   " + Float.BYTES);    // 4
+        System.out.println("double:  " + Double.BYTES);   // 8
+        System.out.println("char:    " + Character.BYTES);// 2
+    }
+}
+```
+
+### 2.4 Kiểu nguyên thủy vs Kiểu tham chiếu
+
+```
+Kiểu nguyên thủy (Primitive):          Kiểu tham chiếu (Reference):
+┌──────────────┐                       ┌──────────────┐
+│  Stack       │                       │  Stack       │     Heap
+│              │                       │              │    ┌─────────────┐
+│  int a = 5;  │                       │  ref ────────┼───►│ Object      │
+│  ┌────┐      │                       │  ┌────┐      │    │ "Xin chào!" │
+│  │ 5  │      │                       │  │0x3F│      │    └─────────────┘
+│  └────┘      │                       │  └────┘      │
+│              │                       │              │
+│ Giá trị lưu  │                       │ Địa chỉ lưu  │
+│ TRỰC TIẾP    │                       │ trên Stack,   │
+│ trên Stack   │                       │ Object trên   │
+│              │                       │ Heap          │
+└──────────────┘                       └──────────────┘
+
+→ Primitive: so sánh bằng ==  (so sánh giá trị)
+→ Reference: so sánh bằng .equals()  (so sánh nội dung)
+             == chỉ so sánh địa chỉ tham chiếu!
+```
+
+---
+
+## 3. Giá trị thập phân của int, long
+
+### 3.1 Cách tính giá trị min/max
+
+Máy tính dùng **hệ nhị phân** (0 và 1). Mỗi bit có thể lưu 0 hoặc 1.
+
+**Công thức cho số có dấu (signed):**
+- **n bit** → biểu diễn từ **-2^(n-1)** đến **2^(n-1) - 1**
+- Bit đầu tiên (MSB) dùng làm **bit dấu**: 0 = dương, 1 = âm
+
+### 3.2 Kiểu int (32 bit)
+
+```
+int (32 bit - 4 bytes):
+
+Bit dấu (1 bit)    Giá trị (31 bit)
+    ↓               ↓
+┌───┬───────────────────────────────────────────────────────┐
+│ 0 │ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 │
+└───┴───────────────────────────────────────────────────────┘
+
+Giá trị MAX = 2^31 - 1 = 2,147,483,647          (~2.1 tỷ)
+Giá trị MIN = -2^31   = -2,147,483,648          (~-2.1 tỷ)
+
+Nhớ nhanh: int ≈ ±2.1 tỷ
+```
+
+### 3.3 Kiểu long (64 bit)
+
+```
+long (64 bit - 8 bytes):
+
+Giá trị MAX = 2^63 - 1 = 9,223,372,036,854,775,807    (~9.2 x 10^18)
+Giá trị MIN = -2^63   = -9,223,372,036,854,775,808
+
+Nhớ nhanh: long ≈ ±9.2 quintillion (tỷ tỷ)
+```
+
+### 3.4 Code kiểm chứng
+
+```java
+public class IntLongRange {
+    public static void main(String[] args) {
+        // ===== INT =====
+        System.out.println("===== INT (32 bit) =====");
+        System.out.println("MIN: " + Integer.MIN_VALUE);  // -2147483648
+        System.out.println("MAX: " + Integer.MAX_VALUE);  //  2147483647
+        System.out.println("Tính tay: 2^31 = " + (long) Math.pow(2, 31)); // 2147483648
+
+        // Tràn số (overflow) - rất nguy hiểm!
+        int maxInt = Integer.MAX_VALUE;
+        System.out.println("\nmax + 1 = " + (maxInt + 1));
+        // Kết quả: -2147483648 (tràn sang số âm nhỏ nhất!)
+
+        // ===== LONG =====
+        System.out.println("\n===== LONG (64 bit) =====");
+        System.out.println("MIN: " + Long.MIN_VALUE);  // -9223372036854775808
+        System.out.println("MAX: " + Long.MAX_VALUE);  //  9223372036854775807
+
+        // Tràn số long
+        long maxLong = Long.MAX_VALUE;
+        System.out.println("\nmax + 1 = " + (maxLong + 1));
+        // Kết quả: -9223372036854775808
+
+        // ===== TỔNG HỢP =====
+        System.out.println("\n===== TỔNG HỢP TẤT CẢ SỐ NGUYÊN =====");
+        System.out.println("byte:  " + Byte.MIN_VALUE + " đến " + Byte.MAX_VALUE);
+        System.out.println("short: " + Short.MIN_VALUE + " đến " + Short.MAX_VALUE);
+        System.out.println("int:   " + Integer.MIN_VALUE + " đến " + Integer.MAX_VALUE);
+        System.out.println("long:  " + Long.MIN_VALUE + " đến " + Long.MAX_VALUE);
+    }
+}
+```
+
+**Output:**
+```
+===== INT (32 bit) =====
+MIN: -2147483648
+MAX: 2147483647
+Tính tay: 2^31 = 2147483648
+
+max + 1 = -2147483648
+
+===== LONG (64 bit) =====
+MIN: -9223372036854775808
+MAX: 9223372036854775807
+
+max + 1 = -9223372036854775808
+
+===== TỔNG HỢP TẤT CẢ SỐ NGUYÊN =====
+byte:  -128 đến 127
+short: -32768 đến 32767
+int:   -2147483648 đến 2147483647
+long:  -9223372036854775808 đến 9223372036854775807
+```
+
+### 3.5 Hiện tượng tràn số (Integer Overflow)
+
+```
+Hình dung int như đồng hồ quay vòng:
+
+          0
+         /|\
+        / | \
+   MAX /  |  \ MIN
+      ↗   |   ↘
+  ... 2   |  -2 ...
+      1   |  -1
+       \  |  /
+        \ | /
+         \|/
+    MAX+1 = MIN  (quay vòng!)
+
+int: 2,147,483,647 + 1 = -2,147,483,648
+     (MAX_VALUE)          (MIN_VALUE)
+```
+
+```java
+// Ví dụ thực tế - Lỗi tràn số nguy hiểm
+int population = 2_100_000_000;  // 2.1 tỷ dân
+int growth = 100_000_000;         // tăng 100 triệu
+int newPop = population + growth;  // Kết quả: -2,094,967,296 (SAI!)
+
+// ✅ Giải pháp: Dùng long
+long safePop = (long) population + growth; // 2,200,000,000 (ĐÚNG)
+```
+
+---
+
+## 4. Sự khác nhau giữa double và float
+
+### 4.1 Bảng so sánh
+
+| Tiêu chí | `float` | `double` |
+|---|---|---|
+| **Kích thước** | 4 bytes (32 bit) | 8 bytes (64 bit) |
+| **Độ chính xác** | ~6-7 chữ số thập phân | ~15-16 chữ số thập phân |
+| **Giá trị max** | ~3.4 × 10^38 | ~1.8 × 10^308 |
+| **Hậu tố khai báo** | Bắt buộc `f` hoặc `F` | Mặc định (không cần) |
+| **Tiêu chuẩn** | IEEE 754 single precision | IEEE 754 double precision |
+| **Dùng khi** | Tiết kiệm bộ nhớ, đồ họa game | Mặc định cho phép tính thập phân |
+
+### 4.2 Cấu trúc lưu trữ theo IEEE 754
+
+```
+float (32 bit):
+┌────┬──────────┬───────────────────────┐
+│Sign│ Exponent │       Mantissa        │
+│1bit│  8 bit   │       23 bit          │
+└────┴──────────┴───────────────────────┘
+Độ chính xác: ~7 chữ số thập phân
+
+double (64 bit):
+┌────┬─────────────┬────────────────────────────────────────────────────┐
+│Sign│  Exponent   │                    Mantissa                       │
+│1bit│   11 bit    │                    52 bit                         │
+└────┴─────────────┴────────────────────────────────────────────────────┘
+Độ chính xác: ~15-16 chữ số thập phân
+```
+
+### 4.3 Code so sánh
+
+```java
+public class FloatVsDouble {
+    public static void main(String[] args) {
+        // ===== ĐỘ CHÍNH XÁC =====
+        float  fPI = 3.141592653589793f;  // Bắt buộc có hậu tố 'f'
+        double dPI = 3.141592653589793;   // Mặc định là double
+
+        System.out.println("PI thực tế: 3.141592653589793...");
+        System.out.println("float  PI = " + fPI);   // 3.1415927 (chỉ 7 chữ số)
+        System.out.println("double PI = " + dPI);    // 3.141592653589793 (15 chữ số)
+        //                                              ↑ float mất chính xác ở đây!
+
+        // ===== SAI SỐ TÍCH LŨY =====
+        float  fSum = 0.0f;
+        double dSum = 0.0;
+
+        for (int i = 0; i < 1000; i++) {
+            fSum += 0.1f;
+            dSum += 0.1;
+        }
+
+        System.out.println("\nCộng 0.1 x 1000 lần:");
+        System.out.println("float  = " + fSum);   // 99.99905 (sai lệch!)
+        System.out.println("double = " + dSum);    // 99.9999999999986 (chính xác hơn)
+        System.out.println("Kỳ vọng = 100.0");
+
+        // ===== KHI NÀO DÙNG FLOAT? =====
+        // Khi cần tiết kiệm bộ nhớ (xử lý hàng triệu giá trị)
+        float[] pixels = new float[1920 * 1080]; // 8 MB (float)
+        // double[] pixels = new double[1920 * 1080]; // 16 MB (double) - gấp đôi!
+
+        // ===== KHI NÀO DÙNG DOUBLE? =====
+        // Hầu hết trường hợp, dùng double (chính xác hơn, là mặc định)
+        double bankBalance = 1_000_000.50;
+        double interestRate = 0.0325;
+    }
+}
+```
+
+---
+
+## 5. Cộng 100 lần số 0.2f và kiểm tra kết quả
+
+### 5.1 Thí nghiệm
+
+```java
+public class FloatPrecision {
+    public static void main(String[] args) {
+        // ===== THÍ NGHIỆM: Cộng 0.2f x 100 lần =====
+        float sum = 0.0f;
+        for (int i = 0; i < 100; i++) {
+            sum += 0.2f;
+        }
+
+        System.out.println("Cộng 0.2f x 100 lần:");
+        System.out.println("Kết quả:  " + sum);       // 20.000004
+        System.out.println("Kỳ vọng:  20.0");
+        System.out.println("Bằng 20? " + (sum == 20.0f)); // false !!!
+
+        // So sánh với double
+        double sumD = 0.0;
+        for (int i = 0; i < 100; i++) {
+            sumD += 0.2;
+        }
+        System.out.println("\nCộng 0.2 (double) x 100 lần:");
+        System.out.println("Kết quả:  " + sumD);      // 19.999999999999996
+        System.out.println("Bằng 20? " + (sumD == 20.0)); // false !!!
+    }
+}
+```
+
+**Output:**
+```
+Cộng 0.2f x 100 lần:
+Kết quả:  20.000004
+Kỳ vọng:  20.0
+Bằng 20? false
+
+Cộng 0.2 (double) x 100 lần:
+Kết quả:  19.999999999999996
+Bằng 20? false
+```
+
+### 5.2 Lý giải: Tại sao kết quả không phải 20.0?
+
+**Nguyên nhân gốc:** Số 0.2 trong hệ thập phân **KHÔNG THỂ** biểu diễn chính xác trong hệ nhị phân.
+
+```
+Chuyển 0.2 (thập phân) sang nhị phân:
+
+0.2 × 2 = 0.4 → 0
+0.4 × 2 = 0.8 → 0
+0.8 × 2 = 1.6 → 1
+0.6 × 2 = 1.2 → 1
+0.2 × 2 = 0.4 → 0  ← Lặp lại!
+0.4 × 2 = 0.8 → 0
+0.8 × 2 = 1.6 → 1
+...
+
+0.2₁₀ = 0.001100110011001100110011... (lặp vô hạn!)
+                                       ↑
+                              Giống như 1/3 = 0.333... trong thập phân
+```
+
+```
+Vì float chỉ có 23 bit mantissa, nó phải CẮT BỎ:
+
+Giá trị thực: 0.00110011001100110011001100110011... (vô hạn)
+float lưu:    0.00110011001100110011001 (cắt tại 23 bit)
+                                       ↑
+                              Sai số nhỏ ở đây!
+
+Sai số mỗi lần cộng: ~0.000000004 (rất nhỏ)
+Nhưng cộng 100 lần:  ~0.000004 (tích lũy thành đáng kể!)
+
+→ Kết quả: 20.000004 thay vì 20.0
+```
+
+### 5.3 Cách so sánh số thực đúng cách
+
+```java
+public class FloatComparison {
+    public static void main(String[] args) {
+        float sum = 0.0f;
+        for (int i = 0; i < 100; i++) {
+            sum += 0.2f;
+        }
+
+        // ❌ SAI: So sánh trực tiếp
+        if (sum == 20.0f) {
+            System.out.println("Bằng 20");
+        } else {
+            System.out.println("Không bằng 20"); // ← Kết quả này!
+        }
+
+        // ✅ ĐÚNG: So sánh với epsilon (sai số cho phép)
+        float EPSILON = 0.0001f;
+        if (Math.abs(sum - 20.0f) < EPSILON) {
+            System.out.println("Gần bằng 20 (trong sai số cho phép)"); // ← Kết quả này!
+        }
+
+        // ✅ ĐÚNG: Dùng BigDecimal cho tính toán chính xác
+        java.math.BigDecimal bdSum = java.math.BigDecimal.ZERO;
+        java.math.BigDecimal bdVal = new java.math.BigDecimal("0.2");
+        for (int i = 0; i < 100; i++) {
+            bdSum = bdSum.add(bdVal);
+        }
+        System.out.println("BigDecimal: " + bdSum);                    // 20.0
+        System.out.println("Bằng 20? " + bdSum.compareTo(
+            new java.math.BigDecimal("20")) == 0 ? "true" : "false");  // true
+    }
+}
+```
+
+### 5.4 Bảng tóm tắt vấn đề số thực
+
+| Vấn đề | Giải pháp |
+|---|---|
+| So sánh `==` không chính xác | Dùng `Math.abs(a - b) < EPSILON` |
+| Tính toán tài chính | Dùng `BigDecimal` hoặc số nguyên (cent) |
+| Tích lũy sai số trong vòng lặp | Dùng `BigDecimal` hoặc thuật toán Kahan |
+| Cần lưu số thập phân chính xác | Dùng `BigDecimal` |
+
+---
+
+## 6. Lệnh rẽ nhánh (if, switch)
+
+### 6.1 Lệnh if - else
+
+```java
+public class IfElseDemo {
+    public static void main(String[] args) {
+        int score = 75;
+
+        // --- 1. if đơn giản ---
+        if (score >= 50) {
+            System.out.println("Đậu!");
+        }
+
+        // --- 2. if - else ---
+        if (score >= 50) {
+            System.out.println("Đậu!");
+        } else {
+            System.out.println("Rớt!");
+        }
+
+        // --- 3. if - else if - else (nhiều nhánh) ---
+        if (score >= 90) {
+            System.out.println("Xuất sắc (A)");
+        } else if (score >= 80) {
+            System.out.println("Giỏi (B)");
+        } else if (score >= 70) {
+            System.out.println("Khá (C)");        // ← In ra dòng này
+        } else if (score >= 60) {
+            System.out.println("Trung bình (D)");
+        } else {
+            System.out.println("Yếu (F)");
+        }
+
+        // --- 4. Toán tử 3 ngôi (ternary) ---
+        String result = (score >= 50) ? "Đậu" : "Rớt";
+        System.out.println(result); // Đậu
+
+        // --- 5. if lồng nhau ---
+        boolean isRegistered = true;
+        if (isRegistered) {
+            if (score >= 50) {
+                System.out.println("Đã đăng ký và đậu!");
+            } else {
+                System.out.println("Đã đăng ký nhưng rớt!");
+            }
+        }
+    }
+}
+```
+
+### 6.2 Lệnh switch
+
+```java
+public class SwitchDemo {
+    public static void main(String[] args) {
+        // --- 1. switch truyền thống ---
+        int dayOfWeek = 3;
+        switch (dayOfWeek) {
+            case 1:
+                System.out.println("Chủ nhật");
+                break;                             // ← PHẢI có break!
+            case 2:
+                System.out.println("Thứ hai");
+                break;
+            case 3:
+                System.out.println("Thứ ba");      // ← In ra
+                break;
+            case 4:
+                System.out.println("Thứ tư");
+                break;
+            case 5:
+                System.out.println("Thứ năm");
+                break;
+            case 6:
+                System.out.println("Thứ sáu");
+                break;
+            case 7:
+                System.out.println("Thứ bảy");
+                break;
+            default:
+                System.out.println("Ngày không hợp lệ");
+        }
+
+        // --- 2. switch gộp case (fall-through có chủ đích) ---
+        switch (dayOfWeek) {
+            case 2: case 3: case 4: case 5: case 6:
+                System.out.println("Ngày làm việc");  // ← In ra
+                break;
+            case 7: case 1:
+                System.out.println("Cuối tuần");
+                break;
+        }
+
+        // --- 3. switch với String (Java 7+) ---
+        String month = "January";
+        switch (month.toLowerCase()) {
+            case "january": case "february": case "march":
+                System.out.println("Quý 1");
+                break;
+            case "april": case "may": case "june":
+                System.out.println("Quý 2");
+                break;
+            case "july": case "august": case "september":
+                System.out.println("Quý 3");
+                break;
+            case "october": case "november": case "december":
+                System.out.println("Quý 4");
+                break;
+        }
+
+        // --- 4. Switch expression (Java 14+) ---
+        String dayName = switch (dayOfWeek) {
+            case 1  -> "Chủ nhật";
+            case 2  -> "Thứ hai";
+            case 3  -> "Thứ ba";
+            case 4  -> "Thứ tư";
+            case 5  -> "Thứ năm";
+            case 6  -> "Thứ sáu";
+            case 7  -> "Thứ bảy";
+            default -> "Không hợp lệ";
+        };
+        System.out.println(dayName); // Thứ ba
+    }
+}
+```
+
+### 6.3 So sánh if vs switch
+
+| Tiêu chí | if - else | switch |
+|---|---|---|
+| **Kiểm tra** | Bất kỳ biểu thức boolean nào | Giá trị cụ thể (bằng) |
+| **Kiểu dữ liệu** | Mọi kiểu | `byte`, `short`, `int`, `char`, `String`, `enum` |
+| **Điều kiện phức tạp** | ✅ `if (x > 5 && x < 10)` | ❌ Không hỗ trợ phạm vi |
+| **Nhiều giá trị cụ thể** | Dài dòng | ✅ Gọn gàng hơn |
+| **Hiệu năng** | Kiểm tra tuần tự | Có thể dùng jump table (nhanh hơn) |
+
+---
+
+## 7. Lệnh lặp (for, while, do-while, foreach)
+
+### 7.1 Vòng lặp for
+
+```java
+public class ForLoopDemo {
+    public static void main(String[] args) {
+        // --- 1. for cơ bản ---
+        // for (khởi tạo; điều_kiện; cập_nhật)
+        System.out.println("=== Đếm từ 1 đến 5 ===");
+        for (int i = 1; i <= 5; i++) {
+            System.out.print(i + " ");  // 1 2 3 4 5
+        }
+        System.out.println();
+
+        // --- 2. for đếm ngược ---
+        System.out.println("=== Đếm ngược từ 5 ===");
+        for (int i = 5; i >= 1; i--) {
+            System.out.print(i + " ");  // 5 4 3 2 1
+        }
+        System.out.println();
+
+        // --- 3. for bước nhảy ---
+        System.out.println("=== Số chẵn từ 0-10 ===");
+        for (int i = 0; i <= 10; i += 2) {
+            System.out.print(i + " ");  // 0 2 4 6 8 10
+        }
+        System.out.println();
+
+        // --- 4. for lồng nhau (bảng cửu chương) ---
+        System.out.println("=== Bảng cửu chương 2-3 ===");
+        for (int i = 2; i <= 3; i++) {
+            for (int j = 1; j <= 9; j++) {
+                System.out.printf("%d x %d = %2d%n", i, j, i * j);
+            }
+            System.out.println("---");
+        }
+
+        // --- 5. break và continue ---
+        System.out.println("=== break: dừng khi gặp 5 ===");
+        for (int i = 1; i <= 10; i++) {
+            if (i == 5) break;          // Thoát vòng lặp
+            System.out.print(i + " ");  // 1 2 3 4
+        }
+        System.out.println();
+
+        System.out.println("=== continue: bỏ qua số 5 ===");
+        for (int i = 1; i <= 10; i++) {
+            if (i == 5) continue;       // Bỏ qua lần lặp này
+            System.out.print(i + " ");  // 1 2 3 4 6 7 8 9 10
+        }
+        System.out.println();
+    }
+}
+```
+
+### 7.2 Vòng lặp while
+
+```java
+public class WhileLoopDemo {
+    public static void main(String[] args) {
+        // --- 1. while cơ bản ---
+        // Kiểm tra điều kiện TRƯỚC khi thực thi
+        System.out.println("=== while: Đếm từ 1 đến 5 ===");
+        int i = 1;
+        while (i <= 5) {
+            System.out.print(i + " ");  // 1 2 3 4 5
+            i++;
+        }
+        System.out.println();
+
+        // --- 2. while với điều kiện phức tạp ---
+        System.out.println("=== Chia liên tục cho 2 ===");
+        int number = 100;
+        while (number > 1) {
+            System.out.print(number + " → ");
+            number /= 2;
+        }
+        System.out.println(number);  // 100 → 50 → 25 → 12 → 6 → 3 → 1
+
+        // --- 3. while vô hạn (cần break để thoát) ---
+        int count = 0;
+        while (true) {
+            count++;
+            if (count > 3) break;
+            System.out.println("Lần lặp: " + count);
+        }
+    }
+}
+```
+
+### 7.3 Vòng lặp do-while
+
+```java
+public class DoWhileDemo {
+    public static void main(String[] args) {
+        // do-while: Thực thi ÍT NHẤT 1 LẦN, rồi mới kiểm tra điều kiện
+        
+        // --- 1. do-while cơ bản ---
+        int i = 1;
+        do {
+            System.out.print(i + " ");  // 1 2 3 4 5
+            i++;
+        } while (i <= 5);
+        System.out.println();
+
+        // --- 2. Khác biệt: while vs do-while khi điều kiện SAI ngay từ đầu ---
+        System.out.println("=== while (điều kiện sai từ đầu) ===");
+        int x = 10;
+        while (x < 5) {
+            System.out.println("while: " + x);  // KHÔNG in gì cả!
+            x++;
+        }
+
+        System.out.println("=== do-while (điều kiện sai từ đầu) ===");
+        int y = 10;
+        do {
+            System.out.println("do-while: " + y);  // In ra 1 lần: "do-while: 10"
+            y++;
+        } while (y < 5);
+
+        // --- 3. Ứng dụng: Menu chương trình ---
+        // int choice;
+        // do {
+        //     System.out.println("1. Thêm");
+        //     System.out.println("2. Xóa");
+        //     System.out.println("3. Thoát");
+        //     choice = scanner.nextInt();
+        //     // xử lý...
+        // } while (choice != 3);  // Lặp đến khi chọn Thoát
+    }
+}
+```
+
+### 7.4 Vòng lặp for-each (Enhanced for)
+
+```java
+public class ForEachDemo {
+    public static void main(String[] args) {
+        // for-each: Duyệt qua TOÀN BỘ phần tử trong mảng/collection
+        // Cú pháp: for (kiểu phần_tử : tập_hợp) { ... }
+
+        // --- 1. Duyệt mảng ---
+        int[] numbers = {10, 20, 30, 40, 50};
+        System.out.println("=== for-each với mảng int ===");
+        for (int num : numbers) {
+            System.out.print(num + " ");  // 10 20 30 40 50
+        }
+        System.out.println();
+
+        // --- 2. Duyệt mảng String ---
+        String[] fruits = {"Táo", "Cam", "Xoài", "Nho"};
+        System.out.println("=== for-each với mảng String ===");
+        for (String fruit : fruits) {
+            System.out.println("- " + fruit);
+        }
+
+        // --- 3. So sánh for truyền thống vs for-each ---
+        System.out.println("=== for truyền thống (có index) ===");
+        for (int i = 0; i < fruits.length; i++) {
+            System.out.println(i + ": " + fruits[i]);
+        }
+
+        System.out.println("=== for-each (không có index) ===");
+        for (String fruit : fruits) {
+            System.out.println("  " + fruit);  // Không biết index
+        }
+
+        // --- 4. for-each với mảng 2 chiều ---
+        int[][] matrix = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+        System.out.println("=== Ma trận ===");
+        for (int[] row : matrix) {
+            for (int val : row) {
+                System.out.printf("%3d", val);
+            }
+            System.out.println();
+        }
+    }
+}
+```
+
+### 7.5 So sánh các vòng lặp
+
+| Tiêu chí | `for` | `while` | `do-while` | `for-each` |
+|---|---|---|---|---|
+| **Biết trước số lần lặp** | ✅ Tốt nhất | Được | Được | ✅ Duyệt hết |
+| **Không biết số lần lặp** | Được | ✅ Tốt nhất | ✅ Tốt | ❌ |
+| **Chạy ít nhất 1 lần** | ❌ | ❌ | ✅ | Phụ thuộc mảng |
+| **Cần index** | ✅ | ✅ | ✅ | ❌ Không có index |
+| **Duyệt collection** | Được | Được | Được | ✅ Tốt nhất |
+| **Sửa phần tử trong vòng lặp** | ✅ | ✅ | ✅ | ❌ Không nên |
+
+---
+
+## 8. Chuyển đổi hệ thập phân, nhị phân, hexa
+
+### 8.1 Tổng quan 3 hệ số
+
+| Hệ | Cơ số | Ký tự sử dụng | Tiền tố Java | Ví dụ |
+|---|---|---|---|---|
+| **Thập phân** (Decimal) | 10 | 0-9 | (không có) | `42` |
+| **Nhị phân** (Binary) | 2 | 0, 1 | `0b` | `0b101010` |
+| **Bát phân** (Octal) | 8 | 0-7 | `0` | `052` |
+| **Thập lục phân** (Hex) | 16 | 0-9, A-F | `0x` | `0x2A` |
+
+### 8.2 Cách chuyển đổi thủ công
+
+```
+===== THẬP PHÂN → NHỊ PHÂN (Chia liên tục cho 2, lấy dư ngược) =====
+
+42 ÷ 2 = 21 dư 0  ↑
+21 ÷ 2 = 10 dư 1  │
+10 ÷ 2 = 5  dư 0  │  Đọc ngược
+ 5 ÷ 2 = 2  dư 1  │  từ dưới lên
+ 2 ÷ 2 = 1  dư 0  │
+ 1 ÷ 2 = 0  dư 1  │
+
+→ 42₁₀ = 101010₂
+
+===== NHỊ PHÂN → THẬP PHÂN (Nhân từng bit với 2^vị_trí) =====
+
+101010₂ = 1×2⁵ + 0×2⁴ + 1×2³ + 0×2² + 1×2¹ + 0×2⁰
+         = 32   + 0    + 8    + 0    + 2    + 0
+         = 42₁₀
+
+===== THẬP PHÂN → HEXA (Chia liên tục cho 16, lấy dư ngược) =====
+
+255 ÷ 16 = 15 dư 15 (F)  ↑
+ 15 ÷ 16 = 0  dư 15 (F)  │ Đọc ngược
+
+→ 255₁₀ = FF₁₆
+
+===== NHỊ PHÂN → HEXA (Nhóm 4 bit từ phải sang trái) =====
+
+101010₂ = 0010 1010
+           ↓    ↓
+           2    A
+
+→ 101010₂ = 2A₁₆
+
+Bảng chuyển đổi nhanh:
+Hex | Bin  | Dec    Hex | Bin  | Dec
+ 0  | 0000 | 0       8  | 1000 | 8
+ 1  | 0001 | 1       9  | 1001 | 9
+ 2  | 0010 | 2       A  | 1010 | 10
+ 3  | 0011 | 3       B  | 1011 | 11
+ 4  | 0100 | 4       C  | 1100 | 12
+ 5  | 0101 | 5       D  | 1101 | 13
+ 6  | 0110 | 6       E  | 1110 | 14
+ 7  | 0111 | 7       F  | 1111 | 15
+```
+
+### 8.3 Code Java chuyển đổi
+
+```java
+public class NumberSystemDemo {
+    public static void main(String[] args) {
+        int decimal = 42;
+
+        // ===== THẬP PHÂN → CÁC HỆ KHÁC =====
+        System.out.println("===== Chuyển đổi từ thập phân: " + decimal + " =====");
+        System.out.println("Nhị phân:     " + Integer.toBinaryString(decimal));  // 101010
+        System.out.println("Bát phân:     " + Integer.toOctalString(decimal));   // 52
+        System.out.println("Thập lục phân: " + Integer.toHexString(decimal));     // 2a
+
+        // ===== CÁC HỆ KHÁC → THẬP PHÂN =====
+        int fromBinary = Integer.parseInt("101010", 2);    // Từ nhị phân
+        int fromOctal  = Integer.parseInt("52", 8);         // Từ bát phân
+        int fromHex    = Integer.parseInt("2A", 16);        // Từ hexa
+
+        System.out.println("\n===== Chuyển về thập phân =====");
+        System.out.println("101010 (bin) = " + fromBinary);  // 42
+        System.out.println("52 (oct)     = " + fromOctal);   // 42
+        System.out.println("2A (hex)     = " + fromHex);     // 42
+
+        // ===== KHAI BÁO TRỰC TIẾP BẰNG LITERAL =====
+        int binLiteral = 0b101010;  // Nhị phân (tiền tố 0b)
+        int octLiteral = 052;       // Bát phân (tiền tố 0)
+        int hexLiteral = 0x2A;      // Hexa (tiền tố 0x)
+
+        System.out.println("\n===== Literal trong Java =====");
+        System.out.println("0b101010 = " + binLiteral);  // 42
+        System.out.println("052      = " + octLiteral);   // 42
+        System.out.println("0x2A     = " + hexLiteral);   // 42
+
+        // ===== CHUYỂN ĐỔI THỦ CÔNG: Thập phân → Nhị phân =====
+        System.out.println("\n===== Chuyển thủ công: " + decimal + " → nhị phân =====");
+        decimalToBinary(decimal);
+
+        // ===== CHUYỂN ĐỔI THỦ CÔNG: Nhị phân → Thập phân =====
+        System.out.println("\n===== Chuyển thủ công: 101010 → thập phân =====");
+        binaryToDecimal("101010");
+
+        // ===== FORMAT ĐẸP =====
+        System.out.printf("\n===== Format =====\n");
+        System.out.printf("Decimal: %d%n", decimal);          // 42
+        System.out.printf("Octal:   %o%n", decimal);          // 52
+        System.out.printf("Hex:     %x (hoặc %X)%n", decimal, decimal); // 2a (hoặc 2A)
+        // Không có format nhị phân trong printf, dùng toBinaryString
+    }
+
+    static void decimalToBinary(int n) {
+        StringBuilder result = new StringBuilder();
+        int original = n;
+        System.out.println("Quá trình chia:");
+        while (n > 0) {
+            int remainder = n % 2;
+            result.insert(0, remainder);
+            System.out.printf("  %d ÷ 2 = %d dư %d%n", n, n / 2, remainder);
+            n /= 2;
+        }
+        System.out.println("→ " + original + "₁₀ = " + result + "₂");
+    }
+
+    static void binaryToDecimal(String binary) {
+        int result = 0;
+        int length = binary.length();
+        System.out.println("Quá trình tính:");
+        for (int i = 0; i < length; i++) {
+            int bit = binary.charAt(i) - '0';
+            int power = length - 1 - i;
+            int value = bit * (int) Math.pow(2, power);
+            if (bit == 1) {
+                System.out.printf("  %d × 2^%d = %d%n", bit, power, value);
+            }
+            result += value;
+        }
+        System.out.println("→ " + binary + "₂ = " + result + "₁₀");
+    }
+}
+```
+
+---
+
+## 9. Toán tử dịch bit, AND/OR bit, so sánh & và &&
+
+### 9.1 Các toán tử bitwise (thao tác trên bit)
+
+```
+Bảng tóm tắt toán tử bitwise:
+
+Toán tử    Tên               Ví dụ         Kết quả
+───────    ────               ─────         ───────
+   &       AND bit            5 & 3         1
+   |       OR bit             5 | 3         7
+   ^       XOR bit            5 ^ 3         6
+   ~       NOT bit (đảo)      ~5            -6
+   <<      Dịch trái          5 << 1        10
+   >>      Dịch phải (có dấu) 20 >> 2       5
+   >>>     Dịch phải (không dấu) -1 >>> 28  15
+```
+
+### 9.2 AND, OR, XOR, NOT bit
+
+```java
+public class BitwiseDemo {
+    public static void main(String[] args) {
+        int a = 5;  // Nhị phân: 0101
+        int b = 3;  // Nhị phân: 0011
+
+        // ===== AND bit (&) - Cả hai bit đều 1 → 1 =====
+        System.out.println("=== AND (&) ===");
+        System.out.println("  0101 (5)");
+        System.out.println("& 0011 (3)");
+        System.out.println("------");
+        System.out.println("  0001 (1)");
+        System.out.println("5 & 3 = " + (a & b));  // 1
+
+        // ===== OR bit (|) - Ít nhất một bit là 1 → 1 =====
+        System.out.println("\n=== OR (|) ===");
+        System.out.println("  0101 (5)");
+        System.out.println("| 0011 (3)");
+        System.out.println("------");
+        System.out.println("  0111 (7)");
+        System.out.println("5 | 3 = " + (a | b));  // 7
+
+        // ===== XOR bit (^) - Hai bit khác nhau → 1 =====
+        System.out.println("\n=== XOR (^) ===");
+        System.out.println("  0101 (5)");
+        System.out.println("^ 0011 (3)");
+        System.out.println("------");
+        System.out.println("  0110 (6)");
+        System.out.println("5 ^ 3 = " + (a ^ b));  // 6
+
+        // ===== NOT bit (~) - Đảo tất cả bit =====
+        System.out.println("\n=== NOT (~) ===");
+        System.out.println("~5 = " + (~a));  // -6
+        // 5  = 00000000 00000000 00000000 00000101
+        // ~5 = 11111111 11111111 11111111 11111010 = -6 (bù 2)
+
+        // ===== Bảng chân lý =====
+        System.out.println("\n=== Bảng chân lý ===");
+        System.out.println("A | B | A&B | A|B | A^B | ~A");
+        System.out.println("0 | 0 |  0  |  0  |  0  |  1");
+        System.out.println("0 | 1 |  0  |  1  |  1  |  1");
+        System.out.println("1 | 0 |  0  |  1  |  1  |  0");
+        System.out.println("1 | 1 |  1  |  1  |  0  |  0");
+    }
+}
+```
+
+### 9.3 Dịch bit (Shift operators)
+
+```java
+public class ShiftDemo {
+    public static void main(String[] args) {
+        // ===== DỊCH TRÁI << (Nhân với 2^n) =====
+        int x = 5; // 00000101
+
+        System.out.println("=== Dịch trái << ===");
+        System.out.println("5 << 1 = " + (x << 1));  // 10  (00001010) = 5 × 2¹
+        System.out.println("5 << 2 = " + (x << 2));  // 20  (00010100) = 5 × 2²
+        System.out.println("5 << 3 = " + (x << 3));  // 40  (00101000) = 5 × 2³
+
+        // Minh họa:
+        // 00000101 (5)
+        // 0000101_ (dịch trái 1, thêm 0 vào phải) → 00001010 (10)
+        // 000101__ (dịch trái 2, thêm 00)          → 00010100 (20)
+
+        // ===== DỊCH PHẢI >> (Chia cho 2^n, giữ dấu) =====
+        int y = 20; // 00010100
+
+        System.out.println("\n=== Dịch phải >> ===");
+        System.out.println("20 >> 1 = " + (y >> 1));  // 10  (00001010) = 20 ÷ 2¹
+        System.out.println("20 >> 2 = " + (y >> 2));  // 5   (00000101) = 20 ÷ 2²
+        System.out.println("20 >> 3 = " + (y >> 3));  // 2   (00000010) = 20 ÷ 2³
+
+        // Với số âm: >> giữ bit dấu
+        int neg = -8;
+        System.out.println("\n-8 >> 1 = " + (neg >> 1));   // -4 (giữ dấu âm)
+        System.out.println("-8 >>> 1 = " + (neg >>> 1));   // 2147483644 (không giữ dấu)
+
+        // ===== ỨNG DỤNG THỰC TẾ =====
+        System.out.println("\n=== Ứng dụng ===");
+
+        // 1. Nhân/chia nhanh cho lũy thừa 2 (nhanh hơn * và /)
+        int multiply8 = 7 << 3;  // 7 × 8 = 56
+        int divide4   = 100 >> 2; // 100 ÷ 4 = 25
+        System.out.println("7 × 8 (bằng <<) = " + multiply8);
+        System.out.println("100 ÷ 4 (bằng >>) = " + divide4);
+
+        // 2. Kiểm tra bit thứ n
+        int num = 42; // 101010
+        int n = 3;    // Kiểm tra bit thứ 3 (tính từ 0)
+        boolean bitSet = ((num >> n) & 1) == 1;
+        System.out.println("Bit thứ " + n + " của " + num + " = " + (bitSet ? "1" : "0"));
+        // bit thứ 3 của 101010 → dịch phải 3 → 000101, AND 1 → 1
+
+        // 3. Set bit thứ n
+        int setResult = num | (1 << 2);  // Set bit thứ 2 (101010 → 101110)
+        System.out.println("Set bit 2 của " + num + " = " + setResult); // 46
+
+        // 4. Hoán đổi 2 số không dùng biến tạm (XOR trick)
+        int p = 10, q = 20;
+        System.out.println("\nTrước: p=" + p + ", q=" + q);
+        p = p ^ q;  // p = 10 ^ 20
+        q = p ^ q;  // q = (10 ^ 20) ^ 20 = 10
+        p = p ^ q;  // p = (10 ^ 20) ^ 10 = 20
+        System.out.println("Sau:   p=" + p + ", q=" + q); // p=20, q=10
+    }
+}
+```
+
+### 9.4 So sánh `&` và `&&`, `|` và `||`
+
+```java
+public class AndComparison {
+    public static void main(String[] args) {
+        // ===== && (Short-circuit AND) vs & (Non-short-circuit AND) =====
+        // && : Nếu vế trái FALSE → KHÔNG kiểm tra vế phải (tối ưu)
+        // &  : LUÔN kiểm tra CẢ HAI vế
+
+        int x = 0;
+
+        // --- Ví dụ 1: && (short-circuit) ---
+        System.out.println("=== && (short-circuit) ===");
+        if (x != 0 && (10 / x > 2)) {
+            // x != 0 là FALSE → KHÔNG tính 10/x → KHÔNG bị lỗi chia cho 0
+            System.out.println("OK");
+        } else {
+            System.out.println("x = 0, bỏ qua phép chia"); // ← In ra
+        }
+
+        // --- Ví dụ 2: & (non-short-circuit) ---
+        System.out.println("\n=== & (non-short-circuit) ===");
+        // if (x != 0 & (10 / x > 2)) {
+        //     // x != 0 là FALSE nhưng VẪN tính 10/x
+        //     // → ArithmeticException: / by zero !!!
+        // }
+        System.out.println("Nếu dùng &, sẽ bị ArithmeticException!");
+
+        // --- Ví dụ 3: Null check an toàn với && ---
+        String str = null;
+        if (str != null && str.length() > 0) {
+            // str != null là FALSE → KHÔNG gọi str.length()
+            // → KHÔNG bị NullPointerException
+            System.out.println("Chuỗi: " + str);
+        } else {
+            System.out.println("Chuỗi null hoặc rỗng"); // ← In ra
+        }
+
+        // --- Minh họa side-effect ---
+        System.out.println("\n=== Side-effect demo ===");
+        int a = 5, b = 5;
+
+        boolean result1 = (a > 10) && (++b > 5);
+        System.out.println("&&: b = " + b);  // b = 5 (++b KHÔNG chạy)
+
+        boolean result2 = (a > 10) & (++b > 5);
+        System.out.println("& : b = " + b);  // b = 6 (++b CHẠY dù vế trái false)
+    }
+}
+```
+
+**Bảng so sánh:**
+
+| Tiêu chí | `&` / `\|` (Bitwise) | `&&` / `\|\|` (Logic short-circuit) |
+|---|---|---|
+| **Kiểu toán hạng** | `int`, `long`, `byte`... VÀ `boolean` | Chỉ `boolean` |
+| **Đánh giá** | LUÔN tính cả 2 vế | Dừng sớm nếu đã biết kết quả |
+| **Khi nào dùng** | Thao tác bit, cần side-effect | Hầu hết trường hợp logic |
+| **An toàn** | Có thể gây lỗi (chia cho 0, null) | An toàn hơn nhờ short-circuit |
+
+---
+
+## 10. Viết và sử dụng hàm, đệ quy, khử đệ quy
+
+### 10.1 Viết và sử dụng hàm (Method)
+
+```java
+public class MethodDemo {
+    // ===== CÚ PHÁP HÀM =====
+    // <access_modifier> <static?> <kiểu_trả_về> <tên_hàm>(<tham_số>) {
+    //     // thân hàm
+    //     return giá_trị; // nếu kiểu trả về khác void
+    // }
+
+    // --- 1. Hàm không trả về giá trị (void) ---
+    public static void sayHello(String name) {
+        System.out.println("Xin chào, " + name + "!");
+    }
+
+    // --- 2. Hàm có trả về giá trị ---
+    public static int add(int a, int b) {
+        return a + b;
+    }
+
+    // --- 3. Hàm có nhiều tham số ---
+    public static double calculateBMI(double weight, double height) {
+        return weight / (height * height);
+    }
+
+    // --- 4. Hàm với varargs (số lượng tham số không cố định) ---
+    public static int sum(int... numbers) {
+        int total = 0;
+        for (int num : numbers) {
+            total += num;
+        }
+        return total;
+    }
+
+    // --- 5. Hàm trả về mảng ---
+    public static int[] getMinMax(int[] arr) {
+        int min = arr[0], max = arr[0];
+        for (int val : arr) {
+            if (val < min) min = val;
+            if (val > max) max = val;
+        }
+        return new int[]{min, max};
+    }
+
+    public static void main(String[] args) {
+        // Gọi hàm
+        sayHello("Dũng");                         // Xin chào, Dũng!
+        int result = add(3, 5);
+        System.out.println("3 + 5 = " + result);  // 3 + 5 = 8
+
+        double bmi = calculateBMI(70, 1.75);
+        System.out.printf("BMI = %.1f%n", bmi);   // BMI = 22.9
+
+        System.out.println("Sum = " + sum(1, 2, 3, 4, 5)); // Sum = 15
+
+        int[] arr = {3, 1, 7, 2, 9, 4};
+        int[] minMax = getMinMax(arr);
+        System.out.println("Min = " + minMax[0] + ", Max = " + minMax[1]); // Min=1, Max=9
+    }
+}
+```
+
+### 10.2 Đệ quy (Recursion)
+
+**Đệ quy** là kỹ thuật trong đó một hàm **gọi lại chính nó** để giải quyết bài toán con nhỏ hơn.
+
+```java
+public class RecursionDemo {
+    // ===== 1. TÍNH GIAI THỪA (n!) =====
+    // 5! = 5 × 4 × 3 × 2 × 1 = 120
+    // n! = n × (n-1)!
+    // 0! = 1 (base case)
+    public static long factorial(int n) {
+        // Base case (điều kiện dừng)
+        if (n <= 1) return 1;
+        // Recursive case (gọi đệ quy)
+        return n * factorial(n - 1);
+    }
+
+    // ===== 2. DÃY FIBONACCI =====
+    // 0, 1, 1, 2, 3, 5, 8, 13, 21, 34...
+    // F(n) = F(n-1) + F(n-2)
+    // F(0) = 0, F(1) = 1
+    public static int fibonacci(int n) {
+        if (n <= 0) return 0;  // Base case
+        if (n == 1) return 1;  // Base case
+        return fibonacci(n - 1) + fibonacci(n - 2);
+    }
+
+    // ===== 3. TÌM KIẾM NHỊ PHÂN (Binary Search) =====
+    public static int binarySearch(int[] arr, int target, int left, int right) {
+        if (left > right) return -1;  // Base case: không tìm thấy
+
+        int mid = left + (right - left) / 2;
+
+        if (arr[mid] == target) return mid;       // Tìm thấy
+        else if (arr[mid] < target)
+            return binarySearch(arr, target, mid + 1, right); // Tìm bên phải
+        else
+            return binarySearch(arr, target, left, mid - 1);  // Tìm bên trái
+    }
+
+    public static void main(String[] args) {
+        // Giai thừa
+        System.out.println("5! = " + factorial(5));   // 120
+        System.out.println("10! = " + factorial(10)); // 3628800
+
+        // Fibonacci
+        System.out.print("Fibonacci: ");
+        for (int i = 0; i <= 10; i++) {
+            System.out.print(fibonacci(i) + " ");
+        }
+        System.out.println(); // 0 1 1 2 3 5 8 13 21 34 55
+
+        // Binary Search
+        int[] sorted = {2, 5, 8, 12, 16, 23, 38, 56, 72, 91};
+        int index = binarySearch(sorted, 23, 0, sorted.length - 1);
+        System.out.println("Tìm 23 tại index: " + index); // 5
+    }
+}
+```
+
+**Minh họa stack đệ quy (Giai thừa 5):**
+
+```
+factorial(5)
+│ return 5 * factorial(4)
+│   │ return 4 * factorial(3)
+│   │   │ return 3 * factorial(2)
+│   │   │   │ return 2 * factorial(1)
+│   │   │   │   │ return 1  ← Base case (dừng)
+│   │   │   │ return 2 * 1 = 2
+│   │   │ return 3 * 2 = 6
+│   │ return 4 * 6 = 24
+│ return 5 * 24 = 120
+
+Call Stack:
+┌─────────────────┐
+│ factorial(1) = 1│ ← Top (gọi cuối, trả về đầu)
+├─────────────────┤
+│ factorial(2)    │
+├─────────────────┤
+│ factorial(3)    │
+├─────────────────┤
+│ factorial(4)    │
+├─────────────────┤
+│ factorial(5)    │ ← Bottom (gọi đầu, trả về cuối)
+└─────────────────┘
+```
+
+### 10.3 Khử đệ quy (Converting Recursion to Iteration)
+
+**Khử đệ quy** là kỹ thuật thay thế đệ quy bằng vòng lặp + stack thủ công, giúp:
+- Tránh **stack overflow** khi đệ quy quá sâu
+- Thường **nhanh hơn** (không tốn chi phí gọi hàm)
+- Tiết kiệm bộ nhớ stack
+
+```java
+import java.util.Stack;
+
+public class DeRecursionDemo {
+    // ===== GIAI THỪA =====
+
+    // Đệ quy:
+    public static long factorialRecursive(int n) {
+        if (n <= 1) return 1;
+        return n * factorialRecursive(n - 1);
+    }
+
+    // Khử đệ quy (dùng vòng lặp):
+    public static long factorialIterative(int n) {
+        long result = 1;
+        for (int i = 2; i <= n; i++) {
+            result *= i;
+        }
+        return result;
+    }
+
+    // ===== FIBONACCI =====
+
+    // Đệ quy (chậm - O(2^n)):
+    public static int fibRecursive(int n) {
+        if (n <= 0) return 0;
+        if (n == 1) return 1;
+        return fibRecursive(n - 1) + fibRecursive(n - 2);
+    }
+
+    // Khử đệ quy (nhanh - O(n)):
+    public static int fibIterative(int n) {
+        if (n <= 0) return 0;
+        if (n == 1) return 1;
+
+        int prev2 = 0; // F(n-2)
+        int prev1 = 1; // F(n-1)
+        int current = 0;
+
+        for (int i = 2; i <= n; i++) {
+            current = prev1 + prev2;
+            prev2 = prev1;
+            prev1 = current;
+        }
+        return current;
+    }
+
+    // ===== DUYỆT CÂY (ví dụ phức tạp hơn) =====
+    // Khử đệ quy bằng Stack thủ công
+
+    // Đệ quy: Tính tổng các chữ số
+    public static int digitSumRecursive(int n) {
+        if (n < 10) return n;
+        return (n % 10) + digitSumRecursive(n / 10);
+    }
+
+    // Khử đệ quy:
+    public static int digitSumIterative(int n) {
+        int sum = 0;
+        while (n > 0) {
+            sum += n % 10;
+            n /= 10;
+        }
+        return sum;
+    }
+
+    // ===== KHỬ ĐỆ QUY BẰNG STACK THỦ CÔNG =====
+    // Ví dụ: Tính giai thừa bằng Stack
+    public static long factorialWithStack(int n) {
+        Stack<Integer> stack = new Stack<>();
+
+        // Push tất cả giá trị cần tính
+        for (int i = n; i >= 1; i--) {
+            stack.push(i);
+        }
+
+        // Pop ra và nhân dần
+        long result = 1;
+        while (!stack.isEmpty()) {
+            result *= stack.pop();
+        }
+        return result;
+    }
+
+    public static void main(String[] args) {
+        System.out.println("===== GIAI THỪA =====");
+        System.out.println("Đệ quy:   10! = " + factorialRecursive(10));   // 3628800
+        System.out.println("Vòng lặp:  10! = " + factorialIterative(10));   // 3628800
+        System.out.println("Stack:     10! = " + factorialWithStack(10));    // 3628800
+
+        System.out.println("\n===== FIBONACCI =====");
+        System.out.println("Đệ quy:   F(10) = " + fibRecursive(10));   // 55
+        System.out.println("Vòng lặp:  F(10) = " + fibIterative(10));  // 55
+
+        // So sánh tốc độ
+        System.out.println("\n===== SO SÁNH TỐC ĐỘ FIBONACCI =====");
+        int n = 40;
+
+        long start = System.currentTimeMillis();
+        fibRecursive(n);
+        long timeRecursive = System.currentTimeMillis() - start;
+
+        start = System.currentTimeMillis();
+        fibIterative(n);
+        long timeIterative = System.currentTimeMillis() - start;
+
+        System.out.println("Đệ quy F(" + n + "): " + timeRecursive + " ms");
+        System.out.println("Vòng lặp F(" + n + "): " + timeIterative + " ms");
+        // Đệ quy: ~500-1000 ms, Vòng lặp: 0 ms!
+
+        System.out.println("\n===== TỔNG CHỮ SỐ =====");
+        System.out.println("Đệ quy:   digitSum(12345) = " + digitSumRecursive(12345)); // 15
+        System.out.println("Vòng lặp:  digitSum(12345) = " + digitSumIterative(12345)); // 15
+    }
+}
+```
+
+### 10.4 So sánh đệ quy vs khử đệ quy
+
+| Tiêu chí | Đệ quy | Khử đệ quy (Iterative) |
+|---|---|---|
+| **Code** | Ngắn gọn, dễ hiểu | Dài hơn, phức tạp hơn |
+| **Tốc độ** | Chậm hơn (overhead gọi hàm) | Nhanh hơn |
+| **Bộ nhớ** | Tốn stack (mỗi lần gọi = 1 stack frame) | Tiết kiệm hơn |
+| **Stack overflow** | Có thể (đệ quy quá sâu) | Không |
+| **Phù hợp** | Cây, đồ thị, chia để trị | Bài toán tuyến tính |
+
+---
+
+## 11. Các ký tự chuỗi đặc biệt
+
+### 11.1 Escape characters (Ký tự thoát)
+
+| Ký tự | Tên | Ý nghĩa | ASCII |
+|---|---|---|---|
+| `\n` | Newline | Xuống dòng mới | 10 |
+| `\t` | Tab | Thụt lề (tab ngang) | 9 |
+| `\r` | Carriage Return | Đưa con trỏ về đầu dòng | 13 |
+| `\b` | Backspace | Xóa ký tự phía trước | 8 |
+| `\\` | Backslash | In dấu `\` | 92 |
+| `\"` | Double quote | In dấu `"` | 34 |
+| `\'` | Single quote | In dấu `'` | 39 |
+| `\0` | Null | Ký tự null | 0 |
+
+### 11.2 Format specifiers (Ký tự định dạng - dùng trong printf)
+
+| Ký tự | Kiểu dữ liệu | Ví dụ | Kết quả |
+|---|---|---|---|
+| `%d` | Số nguyên (int, long) | `printf("%d", 42)` | `42` |
+| `%f` | Số thực (float, double) | `printf("%f", 3.14)` | `3.140000` |
+| `%.2f` | Số thực (2 chữ số thập phân) | `printf("%.2f", 3.14159)` | `3.14` |
+| `%s` | Chuỗi (String) | `printf("%s", "Hello")` | `Hello` |
+| `%c` | Ký tự (char) | `printf("%c", 'A')` | `A` |
+| `%b` | Boolean | `printf("%b", true)` | `true` |
+| `%x` | Hex | `printf("%x", 255)` | `ff` |
+| `%o` | Octal | `printf("%o", 8)` | `10` |
+| `%e` | Khoa học (scientific) | `printf("%e", 123456.789)` | `1.234568e+05` |
+| `%n` | Xuống dòng (platform-independent) | `printf("Hi%n")` | `Hi\n` hoặc `Hi\r\n` |
+| `%%` | In dấu % | `printf("100%%")` | `100%` |
+
+### 11.3 Code ví dụ
+
+```java
+public class SpecialCharsDemo {
+    public static void main(String[] args) {
+        // ===== ESCAPE CHARACTERS =====
+        System.out.println("===== Escape Characters =====");
+
+        // \n - Xuống dòng
+        System.out.println("Dòng 1\nDòng 2\nDòng 3");
+        // Dòng 1
+        // Dòng 2
+        // Dòng 3
+
+        // \t - Tab
+        System.out.println("Tên\tTuổi\tĐiểm");
+        System.out.println("Dũng\t22\t9.5");
+        System.out.println("An\t21\t8.0");
+        // Tên     Tuổi    Điểm
+        // Dũng    22      9.5
+        // An      21      8.0
+
+        // \r - Carriage Return (đưa về đầu dòng, ghi đè)
+        System.out.println("ABCDEF\rXY");
+        // Kết quả: XYCDEF (XY ghi đè AB)
+
+        // \b - Backspace (xóa 1 ký tự trước)
+        System.out.println("Hello\b World");
+        // Kết quả: Hell World (xóa ký tự 'o')
+
+        // \\ - In dấu backslash
+        System.out.println("Đường dẫn: C:\\Users\\Admin");
+        // Đường dẫn: C:\Users\Admin
+
+        // \" - In dấu ngoặc kép
+        System.out.println("Anh ấy nói: \"Xin chào!\"");
+        // Anh ấy nói: "Xin chào!"
+
+        // ===== FORMAT SPECIFIERS (printf) =====
+        System.out.println("\n===== Format Specifiers =====");
+
+        String name = "Dũng";
+        int age = 22;
+        double gpa = 8.567;
+        boolean active = true;
+
+        // %s - String, %d - int, %f - float/double, %b - boolean
+        System.out.printf("Tên: %s, Tuổi: %d, GPA: %.2f, Active: %b%n",
+                name, age, gpa, active);
+        // Tên: Dũng, Tuổi: 22, GPA: 8.57, Active: true
+
+        // Căn lề và padding
+        System.out.printf("|%-15s|%5d|%8.2f|%n", "Nguyễn Dũng", 22, 8.567);
+        System.out.printf("|%-15s|%5d|%8.2f|%n", "Trần An", 21, 9.123);
+        // |Nguyễn Dũng    |   22|    8.57|
+        // |Trần An        |   21|    9.12|
+        // %-15s : căn trái, chiếm 15 ký tự
+        // %5d   : căn phải, chiếm 5 ký tự
+        // %8.2f : căn phải, chiếm 8 ký tự, 2 số thập phân
+
+        // Padding với số 0
+        System.out.printf("Mã: %05d%n", 42);  // Mã: 00042
+
+        // ===== SỰ KHÁC NHAU \n VÀ \r\n =====
+        System.out.println("\n===== \\n vs \\r\\n =====");
+        System.out.println("Linux/Mac dùng:   \\n    (LF - Line Feed)");
+        System.out.println("Windows dùng:     \\r\\n  (CR+LF)");
+        System.out.println("Java %n tự chọn:  phù hợp theo OS");
+    }
+}
+```
+
+---
+
+## 12. Cách xử lý dữ liệu tiền tệ bằng số nguyên
+
+### 12.1 Vấn đề: Tại sao KHÔNG dùng float/double cho tiền?
+
+```java
+public class MoneyProblem {
+    public static void main(String[] args) {
+        // ❌ SAI: Dùng double cho tiền
+        double price = 0.10;
+        double total = 0;
+        for (int i = 0; i < 10; i++) {
+            total += price;
+        }
+        System.out.println("10 × $0.10 = $" + total);
+        // Kết quả: $0.9999999999999999 (KHÔNG PHẢI $1.00!)
+
+        // ❌ SAI: Phép trừ tiền
+        double balance = 1.00;
+        balance -= 0.10;
+        balance -= 0.20;
+        balance -= 0.30;
+        System.out.println("$1.00 - $0.10 - $0.20 - $0.30 = $" + balance);
+        // Kết quả: $0.40000000000000013 (KHÔNG PHẢI $0.40!)
+
+        // ❌ NGUY HIỂM: So sánh tiền
+        if (balance == 0.40) {
+            System.out.println("Đúng $0.40");
+        } else {
+            System.out.println("KHÔNG phải $0.40!"); // ← Kết quả này!
+        }
+    }
+}
+```
+
+### 12.2 Giải pháp 1: Dùng số nguyên (cent)
+
+```java
+public class MoneyAsInteger {
+    public static void main(String[] args) {
+        // ✅ ĐÚNG: Lưu tiền bằng CENT (số nguyên)
+        // $0.02 = 2 cent
+        // $1.50 = 150 cent
+        // $99.99 = 9999 cent
+
+        // Quy tắc: GIÁ TRỊ THẬT = giá_trị_lưu / 100
+
+        // --- Ví dụ: $0.02 ---
+        int priceInCents = 2;  // $0.02 = 2 cent
+        System.out.println("$0.02 = " + priceInCents + " cent");
+
+        // --- Tính toán ---
+        int item1 = 199;   // $1.99
+        int item2 = 350;   // $3.50
+        int item3 = 2;     // $0.02
+        int total = item1 + item2 + item3;  // 551 cent
+
+        System.out.printf("Tổng: %d cent = $%.2f%n", total, total / 100.0);
+        // Tổng: 551 cent = $5.51
+
+        // --- Kiểm tra lại vấn đề ban đầu ---
+        int price10c = 10;  // $0.10 = 10 cent
+        int sum = 0;
+        for (int i = 0; i < 10; i++) {
+            sum += price10c;
+        }
+        System.out.printf("10 × $0.10 = %d cent = $%.2f%n", sum, sum / 100.0);
+        // 10 × $0.10 = 100 cent = $1.00 (CHÍNH XÁC!)
+
+        // --- Trừ tiền ---
+        int balance = 100;   // $1.00
+        balance -= 10;       // - $0.10
+        balance -= 20;       // - $0.20
+        balance -= 30;       // - $0.30
+        System.out.printf("Còn lại: %d cent = $%.2f%n", balance, balance / 100.0);
+        // Còn lại: 40 cent = $0.40 (CHÍNH XÁC!)
+
+        // --- So sánh chính xác ---
+        if (balance == 40) {
+            System.out.println("Đúng $0.40 ✅");  // ← Kết quả này!
+        }
+
+        // --- Hiển thị đẹp ---
+        System.out.println(formatMoney(9999));   // $99.99
+        System.out.println(formatMoney(2));       // $0.02
+        System.out.println(formatMoney(150));     // $1.50
+        System.out.println(formatMoney(1000000)); // $10,000.00
+    }
+
+    // Hàm format tiền từ cent sang $
+    static String formatMoney(int cents) {
+        int dollars = cents / 100;
+        int remainCents = cents % 100;
+
+        // Format có dấu phẩy phân cách hàng nghìn
+        return String.format("$%,d.%02d", dollars, remainCents);
+    }
+}
+```
+
+### 12.3 Giải pháp 2: Dùng BigDecimal
+
+```java
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
+public class MoneyBigDecimal {
+    public static void main(String[] args) {
+        // ✅ BigDecimal: Chính xác tuyệt đối cho tính toán tiền tệ
+        // QUAN TRỌNG: Luôn dùng String constructor, KHÔNG dùng double!
+
+        BigDecimal price = new BigDecimal("0.02");  // ✅ Đúng
+        // BigDecimal wrong = new BigDecimal(0.02);  // ❌ Sai (vẫn lỗi floating point)
+
+        BigDecimal item1 = new BigDecimal("1.99");
+        BigDecimal item2 = new BigDecimal("3.50");
+        BigDecimal item3 = new BigDecimal("0.02");
+
+        BigDecimal total = item1.add(item2).add(item3);
+        System.out.println("Tổng: $" + total);  // Tổng: $5.51
+
+        // Thuế 8.5%
+        BigDecimal taxRate = new BigDecimal("0.085");
+        BigDecimal tax = total.multiply(taxRate).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal grandTotal = total.add(tax);
+
+        System.out.println("Thuế: $" + tax);          // Thuế: $0.47
+        System.out.println("Tổng cộng: $" + grandTotal); // Tổng cộng: $5.98
+
+        // Chia đều tiền (chia 100$ cho 3 người)
+        BigDecimal amount = new BigDecimal("100.00");
+        BigDecimal perPerson = amount.divide(new BigDecimal("3"), 2, RoundingMode.HALF_UP);
+        System.out.println("Mỗi người: $" + perPerson); // $33.33
+        // Còn dư: $100 - $33.33 × 3 = $0.01
+    }
+}
+```
+
+### 12.4 So sánh các phương pháp
+
+| Phương pháp | Ưu điểm | Nhược điểm | Dùng khi |
+|---|---|---|---|
+| **int/long (cent)** | Nhanh nhất, chính xác, đơn giản | Phải tự chia/nhân 100 | Game, hệ thống đơn giản |
+| **BigDecimal** | Chính xác tuyệt đối, nhiều hàm hỗ trợ | Chậm hơn, code dài | Ngân hàng, tài chính, kế toán |
+| **double/float** | ❌ Nhanh nhưng không chính xác | Sai số tích lũy | ❌ KHÔNG BAO GIỜ dùng cho tiền! |
+
+---
+
+## 13. Lập trình với mảng
+
+### 13.1 Khai báo mảng
+
+```java
+public class ArrayDeclaration {
+    public static void main(String[] args) {
+        // ===== CÁCH 1: Khai báo rồi khởi tạo kích thước =====
+        int[] numbers = new int[5];  // Mảng 5 phần tử, mặc định = 0
+        // numbers = [0, 0, 0, 0, 0]
+
+        // ===== CÁCH 2: Khai báo và khởi tạo giá trị =====
+        int[] scores = {90, 85, 78, 92, 88};
+        // Hoặc: int[] scores = new int[]{90, 85, 78, 92, 88};
+
+        // ===== CÁCH 3: Khai báo kiểu C (không khuyến khích) =====
+        int grades[] = {70, 80, 90}; // Hợp lệ nhưng không theo convention Java
+
+        // ===== CÁC KIỂU DỮ LIỆU =====
+        String[] names    = {"Dũng", "An", "Bình"};
+        double[] prices   = {1.99, 3.50, 0.02};
+        boolean[] flags   = {true, false, true};
+        char[] vowels     = {'a', 'e', 'i', 'o', 'u'};
+
+        // ===== TRUY CẬP PHẦN TỬ =====
+        System.out.println("Phần tử đầu: " + scores[0]);           // 90
+        System.out.println("Phần tử cuối: " + scores[scores.length - 1]); // 88
+        System.out.println("Kích thước: " + scores.length);         // 5
+
+        // ===== THAY ĐỔI GIÁ TRỊ =====
+        scores[2] = 95;  // Thay 78 → 95
+
+        // In mảng
+        System.out.println("Mảng: " + java.util.Arrays.toString(scores));
+        // [90, 85, 95, 92, 88]
+
+        // ===== MẢNG 2 CHIỀU =====
+        int[][] matrix = {
+            {1, 2, 3},
+            {4, 5, 6},
+            {7, 8, 9}
+        };
+        System.out.println("matrix[1][2] = " + matrix[1][2]); // 6
+    }
+}
+```
+
+```
+Bộ nhớ của mảng:
+int[] scores = {90, 85, 78, 92, 88};
+
+Stack                    Heap
+┌──────────┐            ┌────┬────┬────┬────┬────┐
+│ scores ──┼──────────► │ 90 │ 85 │ 78 │ 92 │ 88 │
+│ (tham    │            ├────┼────┼────┼────┼────┤
+│  chiếu)  │            │ [0]│ [1]│ [2]│ [3]│ [4]│
+└──────────┘            └────┴────┴────┴────┴────┘
+                         Các phần tử liên tiếp trong bộ nhớ
+                         length = 5
+```
+
+### 13.2 Thêm phần tử (mở rộng mảng)
+
+Mảng Java có **kích thước cố định** → phải tạo mảng mới lớn hơn.
+
+```java
+import java.util.Arrays;
+
+public class ArrayAdd {
+    // Thêm phần tử vào cuối mảng
+    public static int[] addElement(int[] original, int newElement) {
+        int[] newArray = new int[original.length + 1];
+
+        // Copy toàn bộ mảng cũ
+        for (int i = 0; i < original.length; i++) {
+            newArray[i] = original[i];
+        }
+        // Hoặc dùng: System.arraycopy(original, 0, newArray, 0, original.length);
+
+        // Thêm phần tử mới
+        newArray[newArray.length - 1] = newElement;
+        return newArray;
+    }
+
+    // Thêm phần tử tại vị trí index
+    public static int[] insertAt(int[] original, int index, int newElement) {
+        int[] newArray = new int[original.length + 1];
+
+        for (int i = 0, j = 0; i < newArray.length; i++) {
+            if (i == index) {
+                newArray[i] = newElement;
+            } else {
+                newArray[i] = original[j++];
+            }
+        }
+        return newArray;
+    }
+
+    public static void main(String[] args) {
+        int[] arr = {10, 20, 30, 40};
+        System.out.println("Ban đầu: " + Arrays.toString(arr));
+
+        arr = addElement(arr, 50);
+        System.out.println("Thêm 50: " + Arrays.toString(arr));
+        // [10, 20, 30, 40, 50]
+
+        arr = insertAt(arr, 2, 25);
+        System.out.println("Chèn 25 tại index 2: " + Arrays.toString(arr));
+        // [10, 20, 25, 30, 40, 50]
+
+        // ✅ Cách nhanh hơn: dùng Arrays.copyOf
+        int[] arr2 = {1, 2, 3};
+        arr2 = Arrays.copyOf(arr2, arr2.length + 1);
+        arr2[arr2.length - 1] = 4;
+        System.out.println("copyOf: " + Arrays.toString(arr2)); // [1, 2, 3, 4]
+    }
+}
+```
+
+### 13.3 Đổi chỗ phần tử (Swap)
+
+```java
+import java.util.Arrays;
+
+public class ArraySwap {
+    // Đổi chỗ 2 phần tử
+    public static void swap(int[] arr, int i, int j) {
+        int temp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = temp;
+    }
+
+    // Đảo ngược mảng (sử dụng swap)
+    public static void reverse(int[] arr) {
+        int left = 0;
+        int right = arr.length - 1;
+        while (left < right) {
+            swap(arr, left, right);
+            left++;
+            right--;
+        }
+    }
+
+    public static void main(String[] args) {
+        int[] arr = {10, 20, 30, 40, 50};
+
+        // Đổi chỗ phần tử index 1 và 3
+        System.out.println("Trước swap: " + Arrays.toString(arr));
+        swap(arr, 1, 3);
+        System.out.println("Sau swap(1,3): " + Arrays.toString(arr));
+        // [10, 40, 30, 20, 50]
+
+        // Đảo ngược mảng
+        int[] arr2 = {1, 2, 3, 4, 5};
+        System.out.println("\nTrước reverse: " + Arrays.toString(arr2));
+        reverse(arr2);
+        System.out.println("Sau reverse:   " + Arrays.toString(arr2));
+        // [5, 4, 3, 2, 1]
+    }
+}
+```
+
+### 13.4 Copy mảng
+
+```java
+import java.util.Arrays;
+
+public class ArrayCopy {
+    public static void main(String[] args) {
+        int[] original = {10, 20, 30, 40, 50};
+
+        // ===== CÁCH 1: Vòng lặp (thủ công) =====
+        int[] copy1 = new int[original.length];
+        for (int i = 0; i < original.length; i++) {
+            copy1[i] = original[i];
+        }
+
+        // ===== CÁCH 2: System.arraycopy (nhanh nhất) =====
+        int[] copy2 = new int[original.length];
+        System.arraycopy(original, 0, copy2, 0, original.length);
+        // arraycopy(src, srcPos, dest, destPos, length)
+
+        // ===== CÁCH 3: Arrays.copyOf =====
+        int[] copy3 = Arrays.copyOf(original, original.length);
+
+        // Copy một phần
+        int[] partial = Arrays.copyOfRange(original, 1, 4);
+        // [20, 30, 40] (index 1 đến 3, không bao gồm 4)
+
+        // ===== CÁCH 4: clone() =====
+        int[] copy4 = original.clone();
+
+        // ===== KIỂM TRA =====
+        System.out.println("Original: " + Arrays.toString(original));
+        System.out.println("Copy 1:   " + Arrays.toString(copy1));
+        System.out.println("Copy 2:   " + Arrays.toString(copy2));
+        System.out.println("Copy 3:   " + Arrays.toString(copy3));
+        System.out.println("Copy 4:   " + Arrays.toString(copy4));
+        System.out.println("Partial:  " + Arrays.toString(partial));
+
+        // ===== QUAN TRỌNG: Shallow copy vs Deep copy =====
+        // Với mảng primitive (int, double...): copy giá trị → OK
+        copy1[0] = 999;
+        System.out.println("\nSau sửa copy1[0] = 999:");
+        System.out.println("Original: " + Arrays.toString(original)); // [10,...] (không ảnh hưởng)
+        System.out.println("Copy 1:   " + Arrays.toString(copy1));    // [999,...]
+
+        // ⚠️ Với mảng Object: chỉ copy tham chiếu (shallow copy)!
+        String[] names = {"Dũng", "An"};
+        String[] namesCopy = names.clone();
+        // names và namesCopy trỏ đến cùng các String object
+    }
+}
+```
+
+### 13.5 Sắp xếp mảng
+
+```java
+import java.util.Arrays;
+
+public class ArraySort {
+    // ===== BUBBLE SORT (Sắp xếp nổi bọt) =====
+    public static void bubbleSort(int[] arr) {
+        int n = arr.length;
+        for (int i = 0; i < n - 1; i++) {
+            boolean swapped = false;
+            for (int j = 0; j < n - 1 - i; j++) {
+                if (arr[j] > arr[j + 1]) {
+                    // Đổi chỗ
+                    int temp = arr[j];
+                    arr[j] = arr[j + 1];
+                    arr[j + 1] = temp;
+                    swapped = true;
+                }
+            }
+            if (!swapped) break; // Đã sắp xếp xong
+        }
+    }
+
+    // ===== SELECTION SORT (Sắp xếp chọn) =====
+    public static void selectionSort(int[] arr) {
+        int n = arr.length;
+        for (int i = 0; i < n - 1; i++) {
+            int minIdx = i;
+            for (int j = i + 1; j < n; j++) {
+                if (arr[j] < arr[minIdx]) {
+                    minIdx = j;
+                }
+            }
+            // Đổi chỗ arr[i] và arr[minIdx]
+            int temp = arr[i];
+            arr[i] = arr[minIdx];
+            arr[minIdx] = temp;
+        }
+    }
+
+    // ===== INSERTION SORT (Sắp xếp chèn) =====
+    public static void insertionSort(int[] arr) {
+        for (int i = 1; i < arr.length; i++) {
+            int key = arr[i];
+            int j = i - 1;
+            while (j >= 0 && arr[j] > key) {
+                arr[j + 1] = arr[j];
+                j--;
+            }
+            arr[j + 1] = key;
+        }
+    }
+
+    public static void main(String[] args) {
+        // ===== SẮP XẾP BẰNG HÀM THỦ CÔNG =====
+        int[] arr1 = {64, 34, 25, 12, 22, 11, 90};
+        System.out.println("Ban đầu:       " + Arrays.toString(arr1));
+
+        bubbleSort(arr1);
+        System.out.println("Bubble Sort:   " + Arrays.toString(arr1));
+
+        int[] arr2 = {64, 34, 25, 12, 22, 11, 90};
+        selectionSort(arr2);
+        System.out.println("Selection Sort:" + Arrays.toString(arr2));
+
+        int[] arr3 = {64, 34, 25, 12, 22, 11, 90};
+        insertionSort(arr3);
+        System.out.println("Insertion Sort:" + Arrays.toString(arr3));
+        // Tất cả: [11, 12, 22, 25, 34, 64, 90]
+
+        // ===== SẮP XẾP BẰNG Arrays.sort() (khuyến khích) =====
+        int[] arr4 = {64, 34, 25, 12, 22, 11, 90};
+        Arrays.sort(arr4);  // Dùng Dual-Pivot Quicksort (rất nhanh)
+        System.out.println("Arrays.sort(): " + Arrays.toString(arr4));
+
+        // Sắp xếp một phần
+        int[] arr5 = {5, 3, 1, 4, 2};
+        Arrays.sort(arr5, 1, 4);  // Sắp xếp từ index 1 đến 3
+        System.out.println("Sort(1,4):     " + Arrays.toString(arr5)); // [5, 1, 3, 4, 2]
+
+        // ===== SẮP XẾP GIẢM DẦN =====
+        Integer[] arr6 = {64, 34, 25, 12, 22, 11, 90};
+        Arrays.sort(arr6, java.util.Collections.reverseOrder());
+        System.out.println("Giảm dần:      " + Arrays.toString(arr6));
+        // [90, 64, 34, 25, 22, 12, 11]
+
+        // ===== TÌM KIẾM SAU KHI SẮP XẾP =====
+        int[] sorted = {11, 12, 22, 25, 34, 64, 90};
+        int idx = Arrays.binarySearch(sorted, 25);
+        System.out.println("Tìm 25 tại index: " + idx);  // 3
+    }
+}
+```
+
+### 13.6 Minh họa Bubble Sort
+
+```
+Bubble Sort - Mỗi vòng lặp, phần tử lớn nhất "nổi" lên cuối:
+
+Ban đầu: [64, 34, 25, 12, 22, 11, 90]
+
+Lượt 1: So sánh và đổi chỗ từ trái sang phải
+  [64, 34, ...] → 64 > 34 → đổi → [34, 64, 25, 12, 22, 11, 90]
+  [.., 64, 25, ...] → 64 > 25 → đổi → [34, 25, 64, 12, 22, 11, 90]
+  [.., 64, 12, ...] → 64 > 12 → đổi → [34, 25, 12, 64, 22, 11, 90]
+  [.., 64, 22, ...] → 64 > 22 → đổi → [34, 25, 12, 22, 64, 11, 90]
+  [.., 64, 11, ...] → 64 > 11 → đổi → [34, 25, 12, 22, 11, 64, 90]
+  [.., 64, 90]      → 64 < 90 → giữ → [34, 25, 12, 22, 11, 64, 90]
+                                                              ↑ 90 cố định
+
+Lượt 2: (bỏ phần tử cuối - đã đúng vị trí)
+  [34, 25, 12, 22, 11, 64] → ... → [25, 12, 22, 11, 34, 64, 90]
+                                                    ↑ 64 cố định
+
+...tiếp tục cho đến khi sắp xếp xong.
+
+Kết quả: [11, 12, 22, 25, 34, 64, 90]
+```
+
+### 13.7 Tổng hợp các thao tác với mảng
+
+| Thao tác | Phương pháp | Độ phức tạp |
+|---|---|---|
+| **Khai báo** | `int[] arr = new int[n]` hoặc `{1,2,3}` | O(n) |
+| **Truy cập** | `arr[index]` | O(1) |
+| **Tìm kiếm** (chưa sort) | Duyệt tuần tự | O(n) |
+| **Tìm kiếm** (đã sort) | `Arrays.binarySearch()` | O(log n) |
+| **Thêm cuối** | Tạo mảng mới, copy | O(n) |
+| **Chèn giữa** | Tạo mảng mới, copy + dịch | O(n) |
+| **Xóa** | Tạo mảng mới, copy bỏ qua | O(n) |
+| **Sắp xếp** | `Arrays.sort()` | O(n log n) |
+| **Copy** | `Arrays.copyOf()`, `System.arraycopy()` | O(n) |
+| **So sánh** | `Arrays.equals()` | O(n) |
+
+> **💡 Nhận xét**: Mảng có kích thước **cố định** và thêm/xóa phần tử **tốn kém** (O(n)). Khi cần thêm/xóa thường xuyên, hãy dùng `ArrayList` (sẽ học trong phần Collection).
+
+---
+
+> **📌 Kết thúc Phần 2: Lập Trình Cơ Bản**
 >
-> Phần tiếp theo: [Phần 2: Lập Trình Cơ Bản](#phần-2-lập-trình-cơ-bản) *(sẽ được bổ sung)*
+> Phần tiếp theo: [Phần 3: Lập Trình Hướng Đối Tượng (OOP)](#phần-3-lập-trình-hướng-đối-tượng-oop) *(sẽ được bổ sung)*
