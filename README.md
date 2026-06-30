@@ -5035,6 +5035,25 @@ public class ToStringDemo {
 
 ## 27. Tự tạo hàm hashing 3 số nguyên
 
+### 27.1 Mục đích
+
+Bài tập này giúp hiểu cách **hàm hash hoạt động bên trong** bằng cách tự tay xây dựng. Yêu cầu: Viết hàm nhận **3 số nguyên** đầu vào và trả về **1 số nguyên** (hash value).
+
+**Đặc điểm của hàm hash tốt:**
+- **Tính nhất quán**: Cùng input → luôn cho cùng output.
+- **Phân bố đều**: Các giá trị hash trải đều trên miền giá trị, hạn chế va chạm.
+- **Nhanh**: Tính toán trong thời gian O(1).
+
+### 27.2 Ba phương pháp hashing phổ biến
+
+| Phương pháp | Công thức | Đặc điểm |
+|---|---|---|
+| **Division (Chia dư)** | `hash = combined % capacity` | Đơn giản nhất, nên chọn capacity là **số nguyên tố** để phân bố đều |
+| **Multiplication (Nhân - Knuth)** | `hash = phần_thập_phân(key × A) × m` | Dùng hằng số vàng `A = (√5 - 1)/2 ≈ 0.618`, ít bị ảnh hưởng bởi capacity |
+| **XOR + Shift** | `hash = hash * 31 + value` | Phổ biến nhất trong thực tế (Java dùng cách này cho `hashCode()`), số 31 là số nguyên tố lẻ giúp phân bố tốt |
+
+### 27.3 Code ví dụ
+
 ```java
 public class CustomHashDemo {
     // ===== TỰ TẠO HÀM HASH 3 SỐ NGUYÊN → 1 SỐ NGUYÊN =====
@@ -5085,6 +5104,23 @@ public class CustomHashDemo {
 ---
 
 ## 28. Sử dụng MD5 / CRC32 để hash chuỗi
+
+### 28.1 Các thuật toán hash phổ biến
+
+Trong thực tế, ta không cần tự viết hàm hash mà sử dụng các **thuật toán hash chuẩn** đã được chứng minh toán học:
+
+| Thuật toán | Đầu ra | Tốc độ | An toàn? | Sử dụng khi |
+|---|---|---|---|---|
+| **CRC32** | 32-bit (8 ký tự hex) | ⚡ Cực nhanh | ❌ Không | Kiểm tra lỗi truyền dữ liệu (file ZIP, mạng) |
+| **MD5** | 128-bit (32 ký tự hex) | ⚡ Nhanh | ❌ Đã bị phá | Kiểm tra tính toàn vẹn file (checksum). **KHÔNG dùng cho bảo mật** |
+| **SHA-256** | 256-bit (64 ký tự hex) | 🏃 Trung bình | ✅ An toàn | Chữ ký số, blockchain, xác minh dữ liệu quan trọng |
+
+> ⚠️ **Lưu ý quan trọng**:
+> - **MD5** đã bị phá vỡ từ năm 2004 (tìm được 2 input khác nhau cho ra cùng hash → collision attack). Không còn an toàn cho mật khẩu hay chữ ký số.
+> - **CRC32** là thuật toán kiểm tra lỗi (error detection), KHÔNG phải thuật toán bảo mật. Rất dễ tạo collision.
+> - Trong Java: MD5/SHA dùng class `MessageDigest`, CRC32 dùng class `java.util.zip.CRC32`.
+
+### 28.2 Code ví dụ
 
 ```java
 import java.security.MessageDigest;
@@ -5147,6 +5183,39 @@ public class HashAlgorithmDemo {
 ---
 
 ## 29. Hashing để ẩn password
+
+### 29.1 Tại sao KHÔNG BAO GIỜ lưu password dạng plaintext?
+
+Nếu database bị hack (data breach), hacker sẽ đọc được **toàn bộ mật khẩu** của tất cả người dùng. Giải pháp: **Hash password trước khi lưu vào DB**. Khi người dùng đăng nhập, hash lại input rồi so sánh với hash đã lưu.
+
+```
+❌ SAI (Lưu plaintext):          ✅ ĐÚNG (Lưu hash):
+┌──────────┬──────────┐          ┌──────────┬─────────────────────────┐
+│ Username │ Password │          │ Username │ Password Hash           │
+├──────────┼──────────┤          ├──────────┼─────────────────────────┤
+│ admin    │ 123456   │          │ admin    │ a3f5b7...c2d1 (hash)   │
+│ user1    │ abc123   │          │ user1    │ 7e9a2c...f4e8 (hash)   │
+└──────────┴──────────┘          └──────────┴─────────────────────────┘
+  → Hacker đọc được                → Hacker chỉ thấy hash, không
+    ngay mật khẩu!                   suy ngược được mật khẩu gốc!
+```
+
+### 29.2 Salt là gì? Tại sao cần Salt?
+
+**Salt** là một chuỗi **ngẫu nhiên** được sinh ra cho mỗi user, nối vào password **trước khi hash**.
+
+**Tại sao cần Salt?** Nếu không có salt, hai user cùng mật khẩu "123456" sẽ cho ra **cùng 1 hash**. Hacker có thể dùng **Rainbow Table** (bảng tra cứu hash đã tính sẵn cho hàng triệu mật khẩu phổ biến) để dò ngược.
+
+```
+Không có Salt:                    Có Salt:
+"123456" → hash = "abc123..."     "x7k9" + "123456" → hash = "m3n8p2..."
+"123456" → hash = "abc123..."     "q2w5" + "123456" → hash = "r6t1y9..."
+(Giống nhau → dễ dò!)            (Khác nhau → an toàn!)
+```
+
+> 💡 **Thực tế nên dùng**: BCrypt, SCrypt, hoặc Argon2 — các thuật toán hash chuyên dụng cho password, có tính năng **tự động thêm salt** và **chậm có chủ đích** (để brute-force tốn thời gian hơn).
+
+### 29.3 Code ví dụ
 
 ```java
 import java.security.MessageDigest;
@@ -5231,6 +5300,81 @@ Quy trình hash password:
 ---
 
 ## 30. Hashtable và bảng băm
+
+### 30.1 Hashtable là gì?
+
+**Hashtable (Bảng băm)** là một cấu trúc dữ liệu lưu trữ dữ liệu dưới dạng **cặp Key-Value (Khóa - Giá trị)**, sử dụng **hàm băm (Hash Function)** để ánh xạ Key thành một **chỉ số (index)** trong mảng, giúp **tìm kiếm, thêm, xóa** dữ liệu với tốc độ trung bình **O(1)** — nhanh hơn rất nhiều so với duyệt tuần tự O(n).
+
+**Ví dụ thực tế**: Hashtable giống như một **tủ hồ sơ có nhãn dán**:
+- Bạn có hồ sơ (Value) của từng sinh viên, mỗi hồ sơ được đánh mã số (Key).
+- Khi cần tìm hồ sơ, bạn không phải lật từng ngăn kéo mà tra ngay theo nhãn → tìm cực nhanh.
+
+### 30.2 Cấu tạo của bảng băm
+
+Bảng băm gồm **3 thành phần chính**:
+
+```
+┌───────────────────────────────────────────────────────────────────┐
+│                    CẤU TẠO HASH TABLE                            │
+│                                                                   │
+│  1️⃣ MẢNG BUCKETS (Mảng các "ngăn chứa")                         │
+│  ┌─────────────────────────────────────────────────────────┐      │
+│  │ Index │ 0    │ 1    │ 2    │ 3    │ 4    │ 5    │ 6    │      │
+│  │ Data  │ null │ null │(gpa) │(city)│(major│(age) │ null │      │
+│  │       │      │      │      │→name │      │      │      │      │
+│  └─────────────────────────────────────────────────────────┘      │
+│                                                                   │
+│  2️⃣ HÀM HASH (Hash Function)                                    │
+│  ┌──────────┐        ┌──────────────┐        ┌───────────┐       │
+│  │   Key    │───────►│ Hash Function│───────►│  Index    │       │
+│  │ "name"   │        │ hash("name") │        │   = 3     │       │
+│  └──────────┘        └──────────────┘        └───────────┘       │
+│  Công thức: index = Math.abs(key.hashCode() % capacity)          │
+│                                                                   │
+│  3️⃣ XỬ LÝ VA CHẠM (Collision Handling)                          │
+│  Khi 2 key khác nhau cho ra cùng 1 index (ví dụ: hash("name")   │
+│  = 3 và hash("city") = 3), ta dùng "Chaining" (danh sách liên   │
+│  kết) để lưu nhiều entry trong cùng 1 bucket:                    │
+│                                                                   │
+│  Bucket[3]: (city=Hà Nội) → (name=Dũng) → null                  │
+└───────────────────────────────────────────────────────────────────┘
+```
+
+| Thành phần | Vai trò |
+|---|---|
+| **Mảng Buckets** | Mảng có kích thước cố định, mỗi ô (bucket) chứa dữ liệu hoặc danh sách liên kết |
+| **Hash Function** | Hàm biến đổi Key thành chỉ số index trong mảng. Yêu cầu: nhanh, phân bố đều |
+| **Collision Handling** | Cơ chế xử lý khi 2 key khác nhau hash ra cùng 1 index. Phổ biến nhất: **Chaining** (dùng LinkedList) và **Open Addressing** (tìm ô trống kế tiếp) |
+
+### 30.3 Cách sử dụng bảng băm để tìm kiếm
+
+```
+Quá trình TÌM KIẾM key = "name" trong Hash Table:
+
+Bước 1: Tính hash
+   hash("name") = Math.abs("name".hashCode() % 7) = 3
+
+Bước 2: Đến thẳng Bucket[3]
+   Bucket[3]: (city=Hà Nội) → (name=Dũng) → null
+
+Bước 3: Duyệt danh sách trong bucket
+   - So sánh: "city".equals("name") → false → đi tiếp
+   - So sánh: "name".equals("name") → true → TÌM THẤY!
+
+Kết quả: return "Dũng"     Độ phức tạp: O(1) trung bình
+```
+
+**So sánh tốc độ tìm kiếm:**
+
+| Cấu trúc dữ liệu | Tìm kiếm | Ghi chú |
+|---|---|---|
+| **Mảng (duyệt tuần tự)** | O(n) | Phải duyệt từng phần tử |
+| **Mảng (đã sắp xếp + Binary Search)** | O(log n) | Phải sort trước |
+| **Bảng băm (Hash Table)** | **O(1)** trung bình | Nhanh nhất, chỉ cần 1 phép hash |
+
+> **Tóm tắt**: Hash Table nhanh vì thay vì duyệt qua danh sách để tìm, nó **tính toán trực tiếp vị trí** lưu trữ qua hàm hash → nhảy đến đúng ô cần tìm ngay lập tức.
+
+### 30.4 Code ví dụ: Tự xây dựng Hash Table
 
 ```java
 public class HashTableDemo {
@@ -5359,6 +5503,30 @@ Tìm kiếm "name":
 
 ### 31.1 Tại sao phải ghi đè CẢ HAI?
 
+**Mặc định** (khi bạn KHÔNG ghi đè):
+- `equals()`: So sánh **địa chỉ bộ nhớ** (2 biến cùng trỏ đến 1 object → true, khác object → false dù nội dung giống nhau).
+- `hashCode()`: Trả về giá trị được tính từ **địa chỉ bộ nhớ** của object.
+
+**Vấn đề**: Khi bạn đưa object vào `HashSet`, `HashMap`, `HashTable`, chúng dùng **hashCode()** để xác định bucket, rồi dùng **equals()** để so sánh trong bucket. Nếu bạn chỉ ghi đè `equals()` mà **quên** `hashCode()`, hai object "bằng nhau" theo logic nghiệp vụ (cùng id, cùng tên) sẽ có hashCode khác nhau → bị đặt vào **khác bucket** → `HashSet` coi chúng là 2 phần tử khác nhau → **SAI**!
+
+```
+Hậu quả chỉ ghi đè equals() mà QUÊN hashCode():
+
+Student s1 = new Student(1, "Dũng");   // hashCode = 0x7a81 (theo địa chỉ bộ nhớ)
+Student s2 = new Student(1, "Dũng");   // hashCode = 0x3f2c (địa chỉ khác)
+
+s1.equals(s2) → true ✅ (vì đã ghi đè equals so sánh theo id+name)
+s1.hashCode() ≠ s2.hashCode() ❌ (vì CHƯA ghi đè hashCode)
+
+HashSet:
+  Bucket[0x7a81 % size]: chứa s1
+  Bucket[0x3f2c % size]: chứa s2   ← s2 nằm ở bucket KHÁC!
+  → set.size() = 2 (LẼ RA phải là 1 vì s1 == s2)
+  → set.contains(s2) có thể trả về false (SAI!)
+```
+
+### 31.2 Code ví dụ
+
 ```java
 import java.util.HashSet;
 import java.util.Objects;
@@ -5430,7 +5598,7 @@ public class HashCodeEqualsDemo {
 }
 ```
 
-### 31.2 Hợp đồng giữa equals và hashCode
+### 31.3 Hợp đồng giữa equals và hashCode
 
 ```
 QUY TẮC BẮT BUỘC (Contract):
